@@ -489,8 +489,16 @@ function seededRandom(seed){
 }
 
 function todayStr(){
-  const d = new Date();
-  return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
+  // Anchor "today" to Eastern time (handles EST/EDT automatically) so the
+  // puzzle rolls over at the same moment for everyone, regardless of the
+  // player's own device timezone.
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    year: "numeric", month: "numeric", day: "numeric"
+  }).formatToParts(new Date());
+  const map = {};
+  parts.forEach(p => { map[p.type] = p.value; });
+  return `${map.year}-${map.month}-${map.day}`;
 }
 
 document.getElementById("dateLabel").textContent = "Loading today's field…";
@@ -519,13 +527,19 @@ function backToMenu(){
   document.getElementById("pickScreen").classList.remove("hidden");
 }
 
+// Bump this any time a day's puzzle needs a reshuffle (e.g. today's pick
+// turned out too easy/hard) — changes the seed without waiting for the date
+// to roll over. Affects all divisions since the daily seed includes it.
+const SEED_VERSION = 2;
+
 function getDailyAnswer(div){
   const answerPool = PLAYERS.filter(p=>
     (div === "MIX" || p.div === div) &&
     p.rating && p.hometown && p.c1x && p.majorFinish
   );
-  const seed = dateSeed(todayStr() + "-" + div);
+  const seed = dateSeed(todayStr() + "-" + div + "-v" + SEED_VERSION);
   const rand = seededRandom(seed);
+  rand(); // burn the first draw — improves distribution across small pools
 
   let candidates = answerPool;
   if(div === "MIX"){
@@ -727,7 +741,7 @@ function endGame(won){
     title.textContent = "Out of Bounds";
     score.textContent = "X / " + MAX_GUESSES;
   }
-  nameEl.textContent = "Today's disc: " + answer.name + " (PDGA #" + answer.pdga + ")";
+  nameEl.textContent = "Today's Player: " + answer.name + " (PDGA #" + answer.pdga + ")";
   resultBlock.classList.remove("hidden");
 
   document.getElementById("backToMenuBtn").onclick = backToMenu;
