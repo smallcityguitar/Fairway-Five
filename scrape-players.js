@@ -153,16 +153,21 @@ async function getPdgaProfile(pdgaNumber, year = 2026) {
   const html = await fetchHtml(`https://www.pdga.com/player/${pdgaNumber}`);
   const $ = cheerio.load(html);
 
-  const location = $('a[href*="/players?City="]').first().text().trim();
+  // Search the whole rendered page text for these labels rather than a
+  // specific CSS selector — selector guesses are brittle against markup
+  // changes, but "Location:" and "Current Rating:" have shown up as
+  // consistent plain-text labels on every PDGA player page. Collapsing
+  // whitespace makes the regexes resilient to how the HTML happens to be
+  // broken across tags/lines.
+  const bodyText = $('body').text().replace(/\s+/g, ' ');
+
+  let hometown = null;
+  const locMatch = bodyText.match(/Location:\s*(.*?)\s*Classification:/);
+  if (locMatch) hometown = locMatch[1].trim();
 
   let rating = null;
-  $('.field, li, p').each((i, el) => {
-    const t = $(el).text();
-    if (/Current Rating:/.test(t)) {
-      const m = t.match(/Current Rating:\s*(\d+)/);
-      if (m) rating = parseInt(m[1], 10);
-    }
-  });
+  const ratingMatch = bodyText.match(/Current Rating:\s*(\d{3,4})/);
+  if (ratingMatch) rating = parseInt(ratingMatch[1], 10);
 
   // Walk the results table(s); collect rows whose Tier column is M or ES,
   // keep the best (lowest) Place, and remember which tournament it was.
@@ -178,8 +183,18 @@ async function getPdgaProfile(pdgaNumber, year = 2026) {
     }
   });
 
+  // Fail loudly rather than silently returning nulls — a page that fetched
+  // fine (200 OK) but didn't yield a hometown or rating almost certainly
+  // means PDGA's markup shifted and these regexes need updating. Throwing
+  // here means the caller's existing try/catch will fall back to old data
+  // AND print a clear diagnostic, instead of quietly looking like nothing
+  // changed (which is what happened when this parsing was CSS-selector based).
+  if (!hometown || !rating) {
+    throw new Error(`Parsing failed for PDGA #${pdgaNumber} (hometown=${hometown}, rating=${rating}) — PDGA page markup may have changed, check getPdgaProfile()`);
+  }
+
   return {
-    hometown: location || null,
+    hometown,
     rating,
     majorFinish: best ? `${ordinal(best.place)}, ${best.tourney} (${best.tier})` : 'No M/ES finish yet this year',
   };
