@@ -429,11 +429,24 @@ const FALLBACK_PLAYERS = [
 
 const HINT_DEFS = [
   {key:"hometown", label:"Hometown", value:p=>p.hometown},
-  {key:"c1x", label:"C1X Putting %", value:p=>p.c1x + "%"},
+  {key:"c1x", label:"C1X Putting %", value:p=> p.c1x != null ? p.c1x + "%" : null},
   {key:"majorFinish", label:"Best Major/Elite Series Finish (this year)", value:p=>p.majorFinish},
   {key:"standing", label:"Current Pro Tour Standing", value:p=>p.standing},
   {key:"rating", label:"Current PDGA Rating", value:p=>p.rating},
 ];
+
+const MIN_HINTS_REQUIRED = 4;
+
+function availableHintCount(p){
+  return HINT_DEFS.filter(h => {
+    const v = h.value(p);
+    return v !== null && v !== undefined;
+  }).length;
+}
+
+function isEligibleAnswer(p){
+  return availableHintCount(p) >= MIN_HINTS_REQUIRED;
+}
 
 // ===== CONFIG: point this at your repo's raw players.json =====
 // e.g. "https://raw.githubusercontent.com/<user>/<repo>/main/players.json"
@@ -528,17 +541,21 @@ function backToMenu(){
   document.getElementById("pickScreen").classList.remove("hidden");
 }
 
-// Bump this any time a day's puzzle needs a reshuffle (e.g. today's pick
-// turned out too easy/hard) — changes the seed without waiting for the date
-// to roll over. Affects all divisions since the daily seed includes it.
+// Base version for all divisions. To reshuffle just ONE division's puzzle
+// without disturbing the others, bump its entry in SEED_VERSION_OVERRIDES
+// instead of this base number.
 const SEED_VERSION = 3;
+const SEED_VERSION_OVERRIDES = { MPO: 3, FPO: 4, MIX: 3 };
+
+function seedVersionFor(div){
+  return SEED_VERSION_OVERRIDES[div] ?? SEED_VERSION;
+}
 
 function getDailyAnswer(div){
   const answerPool = PLAYERS.filter(p=>
-    (div === "MIX" || p.div === div) &&
-    p.rating && p.hometown && p.c1x && p.majorFinish
+    (div === "MIX" || p.div === div) && isEligibleAnswer(p)
   );
-  const seed = dateSeed(todayStr() + "-" + div + "-v" + SEED_VERSION);
+  const seed = dateSeed(todayStr() + "-" + div + "-v" + seedVersionFor(div));
   const rand = seededRandom(seed);
   rand(); // burn the first draw — improves distribution across small pools
 
@@ -561,7 +578,7 @@ function startGame(div){
 }
 
 function startDebugGame(){
-  const complete = PLAYERS.filter(p=>p.rating && p.hometown && p.c1x && p.majorFinish);
+  const complete = PLAYERS.filter(isEligibleAnswer);
   pool = PLAYERS.slice();
   answer = complete[Math.floor(Math.random()*complete.length)];
   currentDivision = "DEBUG";
@@ -584,7 +601,11 @@ function beginRound(label){
   gameOver = false;
 
   const hintSeed = dateSeed(todayStr() + "-" + answer.name + "-hints-v" + SEED_VERSION);
-  hintOrder = seededShuffle(HINT_DEFS, hintSeed);
+  const availableHints = HINT_DEFS.filter(h => {
+    const v = h.value(answer);
+    return v !== null && v !== undefined;
+  });
+  hintOrder = seededShuffle(availableHints, hintSeed);
 
   document.getElementById("pickScreen").classList.add("hidden");
   document.getElementById("gameScreen").classList.remove("hidden");
