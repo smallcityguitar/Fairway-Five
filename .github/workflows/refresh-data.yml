@@ -1,1 +1,62 @@
+name: Refresh Fairway Five player data
 
+on:
+  schedule:
+    # Full refresh — every Monday at 08:00 UTC
+    - cron: '0 8 * * 1'
+    # Partial refresh (ratings + finishes only) — Tuesdays at 06:00 and 22:00 UTC.
+    # The job itself checks whether today is the second Tuesday of the month
+    # and no-ops otherwise, since cron can't express "2nd Tuesday" directly.
+    - cron: '0 6 * * 2'
+    - cron: '0 22 * * 2'
+  workflow_dispatch:
+    # Lets you trigger a run manually from the Actions tab, e.g. to backfill
+    # the rest of the player pool. Pick the mode from the dropdown.
+    inputs:
+      mode:
+        description: 'Refresh mode'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - partial
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install cheerio
+
+      - name: Determine refresh mode
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "mode=${{ inputs.mode }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.schedule }}" = "0 8 * * 1" ]; then
+            echo "mode=full" >> "$GITHUB_OUTPUT"
+          else
+            echo "mode=partial" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run scraper
+        run: node scrape-players.js --mode=${{ steps.mode.outputs.mode }} --in=players.json --out=players.json
+
+      - name: Commit updated players.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add players.json
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          git commit -m "Refresh player data (${{ steps.mode.outputs.mode }}) [skip ci]"
+          git push
