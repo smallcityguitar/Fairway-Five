@@ -28,6 +28,16 @@
  *                    called with --force, as a safety net independent of
  *                    whatever cron schedule is calling it.
  *
+ * RATE LIMITING
+ * PDGA.com returns HTTP 429 fairly readily for requests coming from
+ * datacenter IPs like GitHub Actions runners. fetchHtml() retries on 429/503
+ * with backoff (respecting a Retry-After header when PDGA sends one), and
+ * there's a ~1.8s+jitter delay between each player fetch. If a given
+ * player's profile still can't be fetched after retries, that one player
+ * falls back to their last-known data (from the existing players.json)
+ * instead of crashing the whole run — a single flaky request no longer
+ * takes down the entire refresh.
+ *
  * HOW TO RUN
  *   node scrape-players.js --mode=full > players.json
  *   node scrape-players.js --mode=partial --in=players.json --out=players.json
@@ -63,12 +73,40 @@ function isSecondTuesday(date) {
   return date.getDay() === 2 && date.getDate() >= 8 && date.getDate() <= 14;
 }
 
-async function fetchHtml(url) {
-  const res = await fetch(url, {
-    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; FairwayFiveBot/1.0)' }
-  });
-  if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status}`);
-  return res.text();
+// GitHub Actions runners share a small pool of well-known IP ranges, and
+// PDGA.com rate-limits (HTTP 429) more aggressively from those than from a
+// residential IP. This wrapper retries on 429/503 with backoff that respects
+// a Retry-After header when PDGA sends one, and otherwise backs off
+// exponentially. A realistic browser User-Agent also helps avoid being
+// bucketed as an obvious bot.
+const BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36';
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function jitter(ms) { return ms + Math.floor(Math.random() * ms * 0.4); }
+
+async function fetchHtml(url, { retries = 5, baseDelay = 3000 } = {}) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': BROWSER_UA,
+        'Accept': 'text/html,application/xhtml+xml',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
+    });
+    if (res.ok) return res.text();
+
+    if ((res.status === 429 || res.status === 503) && attempt < retries) {
+      const retryAfterHeader = res.headers.get('retry-after');
+      const wait = retryAfterHeader
+        ? parseInt(retryAfterHeader, 10) * 1000
+        : jitter(baseDelay * Math.pow(2, attempt));
+      console.error(`  [${res.status}] ${url} — retrying in ${Math.round(wait/1000)}s (attempt ${attempt + 1}/${retries})`);
+      await sleep(wait);
+      continue;
+    }
+    throw new Error(`Failed to fetch ${url}: ${res.status}`);
+  }
+  throw new Error(`Failed to fetch ${url}: gave up after ${retries} retries`);
 }
 
 // 1. Standings: rank + player name + statmando slug
@@ -153,9 +191,11 @@ function ordinal(n) {
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
-async function buildDivision(division) {
+async function buildDivision(division, existingByPdga) {
   const standings = await getStandings(division);
+  await sleep(jitter(1500));
   const c1xMap = await getC1X(division);
+  await sleep(jitter(1500));
   const players = [];
 
   for (const s of standings) {
@@ -167,19 +207,33 @@ async function buildDivision(division) {
       console.error(`No PDGA number on file for ${s.name} — add it to PDGA_NUMBER_LOOKUP`);
       continue;
     }
-    const profile = await getPdgaProfile(pdgaNumber);
+
+    let profile;
+    try {
+      profile = await getPdgaProfile(pdgaNumber);
+    } catch (err) {
+      console.error(`Failed to fetch profile for ${s.name} (#${pdgaNumber}): ${err.message}`);
+      const old = existingByPdga.get(pdgaNumber);
+      // Fall back to whatever we already had rather than dropping the player
+      // or crashing the whole run over one flaky request.
+      profile = old
+        ? { hometown: old.hometown, rating: old.rating, majorFinish: old.majorFinish }
+        : { hometown: null, rating: null, majorFinish: null };
+    }
+
     players.push({
       name: s.name,
       pdga: pdgaNumber,
       div: division,
       rating: profile.rating,
       hometown: profile.hometown,
-      c1x: c1xMap.get(s.name) ?? null,
+      c1x: c1xMap.get(s.name) ?? (existingByPdga.get(pdgaNumber)?.c1x ?? null),
       majorFinish: profile.majorFinish,
       standing: ordinal(s.rank),
     });
-    // Be polite — small delay between requests
-    await new Promise(r => setTimeout(r, 300));
+    // Be polite — a real delay with jitter between requests, since GitHub
+    // Actions IPs get rate-limited much faster than a normal browsing pace.
+    await sleep(jitter(1800));
   }
   return players;
 }
@@ -283,7 +337,7 @@ async function refreshPartial(existingPlayers) {
       console.error(`Failed to refresh ${p.name} (#${p.pdga}): ${err.message}`);
       updated.push(p); // keep old values rather than dropping the player
     }
-    await new Promise(r => setTimeout(r, 300));
+    await sleep(jitter(1800));
   }
   return updated;
 }
@@ -311,9 +365,21 @@ async function main() {
     return;
   }
 
-  // full mode
-  const mpo = await buildDivision('MPO');
-  const fpo = await buildDivision('FPO');
+  // full mode — load whatever's already there (if any) so a flaky fetch for
+  // one player falls back to their last-known data instead of vanishing.
+  let existingByPdga = new Map();
+  const fullInPath = args.in || outPath;
+  if (fullInPath && fs.existsSync(fullInPath)) {
+    try {
+      const existing = JSON.parse(fs.readFileSync(fullInPath, 'utf8'));
+      existingByPdga = new Map(existing.map(p => [p.pdga, p]));
+    } catch (err) {
+      console.error(`Couldn't read existing ${fullInPath}, continuing without fallback data: ${err.message}`);
+    }
+  }
+
+  const mpo = await buildDivision('MPO', existingByPdga);
+  const fpo = await buildDivision('FPO', existingByPdga);
   const json = JSON.stringify([...mpo, ...fpo], null, 2);
   if (outPath) fs.writeFileSync(outPath, json); else console.log(json);
 }
