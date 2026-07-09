@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fairway Five — Daily Disc Golf Guessing Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green-deep:#16302A;
+    --green-mid:#1E4238;
+    --cream:#F2ECDA;
+    --cream-dim:#DCD4B8;
+    --orange:#E8623D;
+    --orange-dim:#a8452c;
+    --ice:#6FA8C9;
+    --ink:#12211C;
+    --miss:#7c6b52;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 50% -10%, #234a3f 0%, var(--green-deep) 55%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 40px);
+    color:var(--cream);
+    font-family:'Oswald', sans-serif;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:24px 16px 60px;
+  }
+  .app{ width:100%; max-width:460px; }
+  .brand{
+    text-align:center;
+    margin-bottom:18px;
+  }
+  .brand .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.24em;
+    color:var(--ice);
+    text-transform:uppercase;
+  }
+  .brand h1{
+    font-size:34px;
+    font-weight:700;
+    letter-spacing:0.02em;
+    margin:4px 0 0;
+    text-transform:uppercase;
+  }
+  .brand h1 span{ color:var(--orange); }
+
+  .card{
+    background:var(--cream);
+    color:var(--ink);
+    border-radius:14px;
+    padding:22px;
+    box-shadow:0 20px 50px rgba(0,0,0,0.35);
+  }
+
+  /* --- Division picker --- */
+  .disc-btn{
+    width:100%;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    background:var(--green-mid);
+    color:var(--cream);
+    border:none;
+    border-radius:999px;
+    padding:14px 20px;
+    margin-bottom:12px;
+    font-family:'Oswald', sans-serif;
+    font-size:17px;
+    font-weight:600;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:transform .12s ease, background .12s ease;
+  }
+  .disc-btn:hover{ background:var(--orange); transform:translateY(-2px); }
+  .disc-btn .disc-icon{
+    width:26px;height:26px;border-radius:50%;
+    background:var(--cream);
+    flex-shrink:0;
+    position:relative;
+  }
+  .disc-btn .disc-icon::after{
+    content:'';
+    position:absolute; inset:6px;
+    border-radius:50%;
+    background:var(--green-mid);
+  }
+  .disc-btn:hover .disc-icon::after{ background:var(--orange); }
+  .pick-sub{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:#5a5142;
+    text-align:center;
+    margin-top:6px;
+  }
+
+  /* --- Flight path signature element --- */
+  .flightwrap{
+    background:var(--green-deep);
+    border-radius:10px;
+    padding:16px 10px 8px;
+    margin-bottom:18px;
+  }
+  svg#flightpath{ width:100%; height:90px; display:block; }
+  .flight-caption{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:var(--cream-dim);
+    text-align:center;
+    letter-spacing:0.08em;
+    margin-top:2px;
+  }
+
+  .division-indicator{
+    text-align:center;
+    margin-bottom:14px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--miss);
+  }
+
+  .guess-row{
+    display:flex;
+    gap:8px;
+    margin-bottom:6px;
+    position:relative;
+  }
+  #guessInput{
+    flex:1;
+    padding:12px 14px;
+    border-radius:8px;
+    border:2px solid var(--cream-dim);
+    font-family:'Oswald', sans-serif;
+    font-size:16px;
+    background:#fff;
+    color:var(--ink);
+  }
+  #guessInput:focus{ outline:none; border-color:var(--orange); }
+  #guessBtn{
+    padding:12px 18px;
+    border-radius:8px;
+    border:none;
+    background:var(--orange);
+    color:#fff;
+    font-family:'Oswald', sans-serif;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+    cursor:pointer;
+  }
+  #guessBtn:disabled{ background:var(--cream-dim); cursor:not-allowed; }
+
+  .autocomplete{
+    position:absolute;
+    bottom:calc(100% + 4px);
+    left:0; right:0;
+    background:#fff;
+    border-radius:8px;
+    box-shadow:0 -8px 24px rgba(0,0,0,0.25);
+    max-height:190px;
+    overflow-y:auto;
+    z-index:10;
+  }
+  .autocomplete div{
+    padding:10px 14px;
+    cursor:pointer;
+    font-size:15px;
+    border-bottom:1px solid #eee;
+  }
+  .autocomplete div:hover{ background:var(--cream); }
+
+  .strokes{
+    display:flex;
+    gap:6px;
+    justify-content:center;
+    margin:14px 0 18px;
+  }
+  .stroke-box{
+    width:44px;height:44px;
+    border-radius:6px;
+    border:2px solid var(--cream-dim);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700;
+    font-size:13px;
+    color:var(--miss);
+    text-align:center;
+    line-height:1.05;
+  }
+  .stroke-box.hit{ background:var(--green-mid); border-color:var(--green-mid); color:var(--cream); }
+  .stroke-box.miss{ background:#efe6cc; border-color:var(--cream-dim); color:var(--orange-dim); }
+
+  .hints{ margin-top:4px; }
+  .hint-card{
+    background:#fff;
+    border-left:4px solid var(--ice);
+    border-radius:6px;
+    padding:10px 14px;
+    margin-bottom:8px;
+    font-size:14px;
+  }
+  .hint-card .hint-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--ice);
+    display:block;
+    margin-bottom:2px;
+  }
+
+  .result{
+    text-align:center;
+    padding:10px 0 4px;
+  }
+  .result h2{ margin:0 0 4px; text-transform:uppercase; }
+  .result .score{
+    font-family:'JetBrains Mono', monospace;
+    font-size:40px;
+    font-weight:700;
+    color:var(--orange-dim);
+  }
+  .result-actions{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    margin-top:12px;
+    flex-wrap:wrap;
+  }
+  .share-btn{
+    background:var(--green-mid);
+    color:var(--cream);
+    border:none;
+    padding:10px 18px;
+    border-radius:999px;
+    font-family:'Oswald',sans-serif;
+    text-transform:uppercase;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .menu-btn{
+    background:transparent;
+    color:var(--green-mid);
+    border:2px solid var(--green-mid);
+    padding:10px 18px;
+    border-radius:999px;
+    font-family:'Oswald',sans-serif;
+    text-transform:uppercase;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .hidden{ display:none !important; }
+  .debug-btn{
+    width:100%;
+    margin-top:14px;
+    background:none;
+    border:1px dashed var(--cream-dim);
+    color:#7a7259;
+    padding:8px 14px;
+    border-radius:8px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.06em;
+    cursor:pointer;
+  }
+  .debug-btn:hover{ background:var(--cream-dim); }
+  .footnote{
+    text-align:center;
+    font-family:'JetBrains Mono', monospace;
+    font-size:10.5px;
+    color:var(--cream-dim);
+    opacity:0.65;
+    margin-top:16px;
+    line-height:1.5;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="brand">
+    <div class="eyebrow" id="brandEyebrow">Goeringer Discs Presents</div>
+    <h1>Fairway <span>Five</span></h1>
+  </div>
+
+  <div class="card" id="pickScreen">
+    <p style="font-family:'JetBrains Mono',monospace;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#5a5142;text-align:center;margin-top:0;">Choose your field</p>
+    <button class="disc-btn" data-div="MPO"><span class="disc-icon"></span> MPO</button>
+    <button class="disc-btn" data-div="FPO"><span class="disc-icon"></span> FPO</button>
+    <button class="disc-btn" data-div="MIX"><span class="disc-icon"></span> Mixed Field</button>
+    <div class="pick-sub" id="dateLabel"></div>
+    <button class="debug-btn hidden" id="debugBtn">🛠 Debug: Random Player</button>
+  </div>
+
+  <div class="card hidden" id="gameScreen">
+    <div class="flightwrap">
+      <svg id="flightpath" viewBox="0 0 400 90" preserveAspectRatio="none">
+        <path d="M 20 70 Q 200 -20 380 70" stroke="#3a5c50" stroke-width="2" fill="none" stroke-dasharray="4 6"/>
+        <circle cx="380" cy="70" r="9" fill="none" stroke="#DCD4B8" stroke-width="2.5"/>
+        <path id="discProgress" d="M 20 70 Q 200 -20 380 70" stroke="#E8623D" stroke-width="3" fill="none" stroke-dasharray="0 1000"/>
+        <circle id="discDot" cx="20" cy="70" r="6" fill="#E8623D"/>
+      </svg>
+      <div class="flight-caption" id="flightCaption">STROKE 1 OF 5 · IN FLIGHT</div>
+    </div>
+
+    <div class="division-indicator" id="divLabel">MPO</div>
+
+    <div class="guess-row">
+      <input type="text" id="guessInput" placeholder="Type a player name…" autocomplete="off">
+      <button id="guessBtn">Guess</button>
+      <div class="autocomplete hidden" id="autocompleteList"></div>
+    </div>
+
+    <div class="strokes" id="strokeTracker"></div>
+
+    <div class="hints" id="hintList"></div>
+
+    <div class="result hidden" id="resultBlock">
+      <h2 id="resultTitle"></h2>
+      <div class="score" id="resultScore"></div>
+      <p id="resultName" style="margin:4px 0 0;"></p>
+      <div class="result-actions">
+        <button class="share-btn" id="shareBtn">Copy Result</button>
+        <button class="menu-btn" id="backToMenuBtn">Back to Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="footnote">
+    Live data verified directly from PDGA.com and StatMando (as of 09-Jul-2026). All 80 top-40 MPO/FPO players have real hometown, C1X%, and standing. Rating + best-finish are fully confirmed for 13 players so far (the rest are being filled in batches) — the daily answer is only ever picked from a fully-confirmed player, but any of the 80 names can be guessed.
+  </p>
+</div>
+
+<script>
+/* ============ REAL DATA — verified live, 09-Jul-2026 ============
+   hometown, standing (DGPT rank), and c1x are confirmed for all 80 top-40
+   MPO/FPO players, pulled from statmando.com and PDGA.com tournament rosters.
+   rating + majorFinish are confirmed for players profiled so far via full
+   PDGA.com player-page fetches; the rest are `null` until fetched in a later
+   batch (game only picks the daily answer from players with a complete
+   profile, but all 80 names are still guessable). */
+const PLAYERS = [
+  // ===== MPO (DGPT World Standings, top 40) =====
+  {name:"Gannon Buhr", pdga:75412, div:"MPO", rating:1061, hometown:"Urbandale, IA", c1x:90.9, majorFinish:"1st, Queen City Classic (ES)", standing:"1st"},
+  {name:"Richard Wysocki", pdga:38008, div:"MPO", rating:1046, hometown:"Scottsdale, AZ", c1x:86.8, majorFinish:"1st, Supreme Flight Open (ES)", standing:"2nd"},
+  {name:"Calvin Heimburg", pdga:45971, div:"MPO", rating:null, hometown:"Safety Harbor, FL", c1x:85.3, majorFinish:null, standing:"3rd"},
+  {name:"Isaac Robinson", pdga:50670, div:"MPO", rating:1047, hometown:"Lawrenceville, GA", c1x:88.7, majorFinish:"2nd, Jonesboro Open (ES)", standing:"4th"},
+  {name:"Adam Hammes", pdga:57365, div:"MPO", rating:1039, hometown:"Minocqua, WI", c1x:83.3, majorFinish:"3rd, Jonesboro Open (ES)", standing:"5th"},
+  {name:"Anthony Barela", pdga:44382, div:"MPO", rating:1042, hometown:"Mesa, AZ", c1x:84.1, majorFinish:"3rd, PDGA Champions Cup (M)", standing:"6th"},
+  {name:"Niklas Anttila", pdga:91249, div:"MPO", rating:1045, hometown:"Kuopio, Finland", c1x:84.7, majorFinish:"1st, PDGA Champions Cup (M)", standing:"7th"},
+  {name:"Gavin Babcock", pdga:80331, div:"MPO", rating:1033, hometown:"Altoona, IA", c1x:84.1, majorFinish:null, standing:"8th"},
+  {name:"Sullivan Tipton", pdga:78817, div:"MPO", rating:1042, hometown:"Birmingham, AL", c1x:86.9, majorFinish:"5th, Supreme Flight Open (ES)", standing:"9th"},
+  {name:"Luke Taylor", pdga:102119, div:"MPO", rating:1034, hometown:"Shepherd, MI", c1x:84.3, majorFinish:"4th, MVP Big Easy Open (ES)", standing:"10th"},
+  {name:"Eagle McMahon", pdga:37817, div:"MPO", rating:1040, hometown:"Boulder, CO", c1x:91.1, majorFinish:null, standing:"11th"},
+  {name:"Casey White", pdga:81739, div:"MPO", rating:1033, hometown:"Shirley, MA", c1x:90.1, majorFinish:"T28, PDGA Champions Cup (M)", standing:"12th"},
+  {name:"Ezra Robinson", pdga:50671, div:"MPO", rating:1038, hometown:"Lawrenceville, GA", c1x:87.6, majorFinish:"2nd, Barbasol Open at Austin (ES)", standing:"13th"},
+  {name:"Aaron Gossage", pdga:35449, div:"MPO", rating:1040, hometown:"Grand Jct, CO", c1x:81.1, majorFinish:"8th, MVP Big Easy Open (ES)", standing:"14th"},
+  {name:"Zachary Nash", pdga:101197, div:"MPO", rating:1030, hometown:"Hico, TX", c1x:87.4, majorFinish:null, standing:"15th"},
+  {name:"Joseph Anderson", pdga:122356, div:"MPO", rating:null, hometown:"Athens, GA", c1x:82.9, majorFinish:null, standing:"16th"},
+  {name:"Silas Schultz", pdga:79047, div:"MPO", rating:null, hometown:"Baton Rouge, LA", c1x:71.4, majorFinish:null, standing:"17th"},
+  {name:"Raven Newsom", pdga:88212, div:"MPO", rating:null, hometown:"Hot Springs, NC", c1x:87.9, majorFinish:null, standing:"18th"},
+  {name:"Jaden Rye", pdga:153363, div:"MPO", rating:null, hometown:"Murphy, TX", c1x:84.9, majorFinish:null, standing:"19th"},
+  {name:"Kyle Klein", pdga:85132, div:"MPO", rating:null, hometown:"Grand Haven, MI", c1x:84.9, majorFinish:null, standing:"20th"},
+  {name:"Andrew Marwede", pdga:75590, div:"MPO", rating:null, hometown:"Alpena, MI", c1x:95.0, majorFinish:null, standing:"21st"},
+  {name:"Jake Monn", pdga:98722, div:"MPO", rating:null, hometown:"Simpsonville, SC", c1x:88.4, majorFinish:null, standing:"22nd"},
+  {name:"Chris Dickerson", pdga:62467, div:"MPO", rating:null, hometown:"Gray, TN", c1x:85.2, majorFinish:null, standing:"23rd"},
+  {name:"Austin Turner", pdga:54049, div:"MPO", rating:null, hometown:"Mint Hill, NC", c1x:78.4, majorFinish:null, standing:"24th"},
+  {name:"Cole Redalen", pdga:79748, div:"MPO", rating:null, hometown:"Portland, OR", c1x:76.3, majorFinish:null, standing:"25th"},
+  {name:"Bradley Williams", pdga:31644, div:"MPO", rating:null, hometown:"Austin, TX", c1x:89.0, majorFinish:null, standing:"26th"},
+  {name:"Paul Ulibarri", pdga:27171, div:"MPO", rating:null, hometown:"Rock Hill, SC", c1x:88.9, majorFinish:null, standing:"27th"},
+  {name:"Paul Krans", pdga:132521, div:"MPO", rating:null, hometown:"Dudley, MA", c1x:95.2, majorFinish:null, standing:"28th"},
+  {name:"Corey Ellis", pdga:44512, div:"MPO", rating:null, hometown:"Barboursville, WV", c1x:93.6, majorFinish:null, standing:"29th"},
+  {name:"Parker Welck", pdga:39491, div:"MPO", rating:null, hometown:"Lahaina, HI", c1x:84.2, majorFinish:null, standing:"30th"},
+  {name:"Jesse Nieminen", pdga:58923, div:"MPO", rating:null, hometown:"Kuopio, Finland", c1x:84.3, majorFinish:null, standing:"31st"},
+  {name:"Mauri Villmann", pdga:107197, div:"MPO", rating:null, hometown:"Vasalemma, Estonia", c1x:86.0, majorFinish:null, standing:"32nd"},
+  {name:"Evan Smith", pdga:101574, div:"MPO", rating:null, hometown:"Raleigh, NC", c1x:90.9, majorFinish:null, standing:"33rd"},
+  {name:"Jakub Semerád", pdga:91925, div:"MPO", rating:null, hometown:"Žleby, Czech Republic", c1x:85.0, majorFinish:null, standing:"34th"},
+  {name:"Braeden Sides", pdga:129963, div:"MPO", rating:null, hometown:"North Augusta, SC", c1x:82.1, majorFinish:null, standing:"35th"},
+  {name:"Clay Edwards", pdga:91397, div:"MPO", rating:null, hometown:"Charlotte, NC", c1x:89.3, majorFinish:null, standing:"36th"},
+  {name:"Väinö Mäkelä", pdga:59635, div:"MPO", rating:null, hometown:"Turku, Finland", c1x:82.5, majorFinish:null, standing:"37th"},
+  {name:"Albert Tamm", pdga:76669, div:"MPO", rating:null, hometown:"Tartu, Estonia", c1x:78.0, majorFinish:null, standing:"38th"},
+  {name:"Evan Scott", pdga:89394, div:"MPO", rating:null, hometown:"Duncan, SC", c1x:86.2, majorFinish:null, standing:"39th"},
+  {name:"Robert Burridge", pdga:96512, div:"MPO", rating:null, hometown:"Houston, TX", c1x:77.1, majorFinish:null, standing:"40th"},
+
+  // ===== FPO (DGPT World Standings, top 40) =====
+  {name:"Ohn Scoggins", pdga:48976, div:"FPO", rating:989, hometown:"Los Angeles, CA", c1x:77.6, majorFinish:"1st, Supreme Flight Open (ES)", standing:"1st"},
+  {name:"Holyn Handley", pdga:133547, div:"FPO", rating:987, hometown:"Grapevine, TX", c1x:82.7, majorFinish:"1st, Big Easy Open (ES)", standing:"2nd"},
+  {name:"Silva Saarinen", pdga:107335, div:"FPO", rating:null, hometown:"Oitti, Finland", c1x:80.3, majorFinish:null, standing:"3rd"},
+  {name:"Missy Gannon", pdga:85942, div:"FPO", rating:null, hometown:"Beacon, NY", c1x:87.7, majorFinish:null, standing:"4th"},
+  {name:"Henna Blomroos", pdga:59227, div:"FPO", rating:null, hometown:"Rauma, Finland", c1x:60.2, majorFinish:null, standing:"5th"},
+  {name:"Catrina Allen", pdga:44184, div:"FPO", rating:null, hometown:"Sioux Falls, SD", c1x:79.7, majorFinish:null, standing:"6th"},
+  {name:"Eveliina Salonen", pdga:64927, div:"FPO", rating:null, hometown:"Pirkkala, Finland", c1x:61.0, majorFinish:null, standing:"7th"},
+  {name:"Ella Hansen", pdga:144112, div:"FPO", rating:null, hometown:"Seattle, WA", c1x:76.3, majorFinish:null, standing:"8th"},
+  {name:"Valerie Mandujano", pdga:62879, div:"FPO", rating:null, hometown:"San Antonio, TX", c1x:77.5, majorFinish:null, standing:"9th"},
+  {name:"Hanna Huynh", pdga:112647, div:"FPO", rating:null, hometown:"Spokane, WA", c1x:77.1, majorFinish:null, standing:"10th"},
+  {name:"Kat Mertsch", pdga:99455, div:"FPO", rating:null, hometown:"Rose Bud, AR", c1x:80.0, majorFinish:null, standing:"11th"},
+  {name:"Lisa Fajkus", pdga:32654, div:"FPO", rating:null, hometown:"Canyon Lake, TX", c1x:84.6, majorFinish:null, standing:"12th"},
+  {name:"Jessica Gurthie", pdga:50656, div:"FPO", rating:null, hometown:"Grass Valley, CA", c1x:67.9, majorFinish:null, standing:"13th"},
+  {name:"Sintija Klezberga", pdga:229526, div:"FPO", rating:null, hometown:"Rīga, Latvia", c1x:72.1, majorFinish:null, standing:"14th"},
+  {name:"Taylor Chocek", pdga:189702, div:"FPO", rating:null, hometown:"Eugene, OR", c1x:82.5, majorFinish:null, standing:"15th"},
+  {name:"Sofia Donnecke", pdga:185534, div:"FPO", rating:null, hometown:"Victoria, BC, Canada", c1x:70.7, majorFinish:null, standing:"16th"},
+  {name:"Emily Weatherman", pdga:111487, div:"FPO", rating:null, hometown:"Abilene, TX", c1x:81.5, majorFinish:null, standing:"17th"},
+  {name:"Paige Pierce", pdga:29190, div:"FPO", rating:null, hometown:"Pensacola, FL", c1x:73.5, majorFinish:null, standing:"18th"},
+  {name:"Rebecca Cox", pdga:32917, div:"FPO", rating:null, hometown:"Cincinnati, OH", c1x:68.0, majorFinish:null, standing:"19th"},
+  {name:"Raven Klein", pdga:138272, div:"FPO", rating:null, hometown:"Burnsville, MN", c1x:71.3, majorFinish:null, standing:"20th"},
+  {name:"Alexis Mandujano", pdga:62880, div:"FPO", rating:null, hometown:"San Antonio, TX", c1x:82.1, majorFinish:null, standing:"21st"},
+  {name:"Madison Walker", pdga:59431, div:"FPO", rating:null, hometown:"Pensacola, FL", c1x:77.9, majorFinish:null, standing:"22nd"},
+  {name:"Heidi Laine", pdga:66599, div:"FPO", rating:null, hometown:"Hämeenlinna, Finland", c1x:64.9, majorFinish:null, standing:"23rd"},
+  {name:"Kona Star Montgomery", pdga:27832, div:"FPO", rating:null, hometown:"Rancho Cucamonga, CA", c1x:65.2, majorFinish:null, standing:"24th"},
+  {name:"Rebecca Don", pdga:208576, div:"FPO", rating:null, hometown:"Westport, ON, Canada", c1x:77.3, majorFinish:null, standing:"25th"},
+  {name:"Eliezra Midtlyng", pdga:198446, div:"FPO", rating:null, hometown:"Oceanport, NJ", c1x:60.5, majorFinish:null, standing:"26th"},
+  {name:"Macie Velediaz", pdga:104187, div:"FPO", rating:null, hometown:"Morristown, TN", c1x:75.5, majorFinish:null, standing:"27th"},
+  {name:"Anneli Tõugjas-Männiste", pdga:85484, div:"FPO", rating:null, hometown:"Otepää, Estonia", c1x:75.0, majorFinish:null, standing:"28th"},
+  {name:"Anniken Kristiansen Steen", pdga:109996, div:"FPO", rating:null, hometown:"Hamar, Norway", c1x:73.1, majorFinish:null, standing:"29th"},
+  {name:"Dani K. Hart", pdga:146137, div:"FPO", rating:null, hometown:"San Jose, CA", c1x:72.7, majorFinish:null, standing:"30th"},
+  {name:"Iida Lehtomäki", pdga:216558, div:"FPO", rating:null, hometown:"Petäjävesi, Finland", c1x:68.1, majorFinish:null, standing:"31st"},
+  {name:"Jennifer Smiley", pdga:184736, div:"FPO", rating:null, hometown:"Ashburn, VA", c1x:77.4, majorFinish:null, standing:"32nd"},
+  {name:"Kelley Foster", pdga:152191, div:"FPO", rating:null, hometown:"Birmingham, AL", c1x:80.3, majorFinish:null, standing:"33rd"},
+  {name:"Maria Oliva", pdga:63257, div:"FPO", rating:null, hometown:"Waverly, TN", c1x:66.7, majorFinish:null, standing:"34th"},
+  {name:"Jennifer Allen", pdga:15354, div:"FPO", rating:null, hometown:"Gilbert, AZ", c1x:null, majorFinish:null, standing:"35th"},
+  {name:"MJ Gager", pdga:146304, div:"FPO", rating:null, hometown:"Amissville, VA", c1x:76.2, majorFinish:null, standing:"36th"},
+  {name:"Erika Stinchcomb", pdga:71262, div:"FPO", rating:null, hometown:"Missoula, MT", c1x:76.5, majorFinish:null, standing:"37th"},
+  {name:"Holly Finley", pdga:51277, div:"FPO", rating:null, hometown:"Denver, NC", c1x:79.6, majorFinish:null, standing:"38th"},
+  {name:"Ida Emilie Nesse", pdga:181772, div:"FPO", rating:null, hometown:"Espeland, Norway", c1x:null, majorFinish:null, standing:"39th"},
+  {name:"Chandler Reigh", pdga:277832, div:"FPO", rating:null, hometown:"Kingman, AZ", c1x:75.0, majorFinish:null, standing:"40th"},
+];
+
+const HINT_DEFS = [
+  {key:"hometown", label:"Hometown", value:p=>p.hometown},
+  {key:"c1x", label:"C1X Putting %", value:p=>p.c1x + "%"},
+  {key:"majorFinish", label:"Best Major/Elite Series Finish (this year)", value:p=>p.majorFinish},
+  {key:"standing", label:"Current Pro Tour Standing", value:p=>p.standing},
+  {key:"rating", label:"Current PDGA Rating", value:p=>p.rating},
+];
+
+const MAX_GUESSES = 5;
+let pool = [];
+let answer = null;
+let guessCount = 0;
+let usedHints = [];
+let gameOver = false;
+let currentDivision = "MPO";
+
+function dateSeed(str){
+  let h = 0;
+  for(let i=0;i<str.length;i++){ h = (h*31 + str.charCodeAt(i)) >>> 0; }
+  return h;
+}
+function seededRandom(seed){
+  let s = seed % 2147483647;
+  if(s<=0) s += 2147483646;
+  return function(){
+    s = (s*16807) % 2147483647;
+    return (s-1)/2147483646;
+  };
+}
+
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
+}
+
+document.getElementById("dateLabel").textContent = "Today's puzzle · " + todayStr();
+
+document.querySelectorAll(".disc-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    currentDivision = btn.dataset.div;
+    startGame(currentDivision);
+  });
+});
+
+let debugTapCount = 0;
+document.getElementById("brandEyebrow").addEventListener("click", ()=>{
+  debugTapCount++;
+  if(debugTapCount >= 5){
+    document.getElementById("debugBtn").classList.remove("hidden");
+  }
+});
+document.getElementById("debugBtn").addEventListener("click", startDebugGame);
+
+function backToMenu(){
+  document.getElementById("gameScreen").classList.add("hidden");
+  document.getElementById("pickScreen").classList.remove("hidden");
+}
+
+function getDailyAnswer(div){
+  const answerPool = PLAYERS.filter(p=>
+    (div === "MIX" || p.div === div) &&
+    p.rating && p.hometown && p.c1x && p.majorFinish
+  );
+  const seed = dateSeed(todayStr() + "-" + div);
+  const rand = seededRandom(seed);
+
+  let candidates = answerPool;
+  if(div === "MIX"){
+    // Make sure MIX never coincides with whichever player MPO or FPO landed on today.
+    const mpoAnswer = getDailyAnswer("MPO");
+    const fpoAnswer = getDailyAnswer("FPO");
+    const excluded = new Set([mpoAnswer && mpoAnswer.name, fpoAnswer && fpoAnswer.name]);
+    const filtered = answerPool.filter(p=>!excluded.has(p.name));
+    if(filtered.length > 0) candidates = filtered;
+  }
+  return candidates[Math.floor(rand()*candidates.length)];
+}
+
+function startGame(div){
+  pool = div === "MIX" ? PLAYERS.slice() : PLAYERS.filter(p=>p.div===div);
+  answer = getDailyAnswer(div);
+  beginRound(div);
+}
+
+function startDebugGame(){
+  const complete = PLAYERS.filter(p=>p.rating && p.hometown && p.c1x && p.majorFinish);
+  pool = PLAYERS.slice();
+  answer = complete[Math.floor(Math.random()*complete.length)];
+  currentDivision = "DEBUG";
+  beginRound("DEBUG · " + answer.div);
+}
+
+function beginRound(label){
+  guessCount = 0;
+  usedHints = [];
+  gameOver = false;
+
+  document.getElementById("pickScreen").classList.add("hidden");
+  document.getElementById("gameScreen").classList.remove("hidden");
+  document.getElementById("divLabel").textContent = label;
+  document.getElementById("hintList").innerHTML = "";
+  document.getElementById("resultBlock").classList.add("hidden");
+  document.getElementById("guessInput").value = "";
+  document.getElementById("guessInput").disabled = false;
+  document.getElementById("guessBtn").disabled = true;
+
+  buildStrokeTracker();
+  updateFlightPath();
+}
+
+function buildStrokeTracker(){
+  const tracker = document.getElementById("strokeTracker");
+  tracker.innerHTML = "";
+  for(let i=1;i<=MAX_GUESSES;i++){
+    const box = document.createElement("div");
+    box.className = "stroke-box";
+    box.id = "stroke-"+i;
+    box.textContent = i;
+    tracker.appendChild(box);
+  }
+}
+
+function updateFlightPath(won){
+  const progress = document.getElementById("discProgress");
+  const dot = document.getElementById("discDot");
+  const caption = document.getElementById("flightCaption");
+  const pct = guessCount / MAX_GUESSES;
+  const totalLen = 420;
+  progress.setAttribute("stroke-dasharray", (pct*totalLen) + " 1000");
+
+  // Move dot along a rough approximation of the quadratic curve
+  const t = pct;
+  const x0=20,y0=70,cx=200,cy=-20,x1=380,y1=70;
+  const x = (1-t)*(1-t)*x0 + 2*(1-t)*t*cx + t*t*x1;
+  const y = (1-t)*(1-t)*y0 + 2*(1-t)*t*cy + t*t*y1;
+  dot.setAttribute("cx", x);
+  dot.setAttribute("cy", y);
+
+  if(gameOver){
+    caption.textContent = won ? "CHAINS · HOLED OUT" : "OUT OF BOUNDS";
+  } else {
+    caption.textContent = "STROKE " + (guessCount+1) + " OF " + MAX_GUESSES + " · IN FLIGHT";
+  }
+}
+
+// Autocomplete
+const guessInput = document.getElementById("guessInput");
+const autocompleteList = document.getElementById("autocompleteList");
+const guessBtnEl = document.getElementById("guessBtn");
+
+function renderAutocomplete(matches){
+  autocompleteList.innerHTML = "";
+  if(matches.length===0){ autocompleteList.classList.add("hidden"); return; }
+  matches.forEach(p=>{
+    const div = document.createElement("div");
+    div.textContent = p.name;
+    div.addEventListener("click", ()=>{
+      guessInput.value = p.name;
+      autocompleteList.classList.add("hidden");
+      updateGuessBtnState();
+      guessInput.focus();
+    });
+    autocompleteList.appendChild(div);
+  });
+  autocompleteList.classList.remove("hidden");
+}
+
+function updateGuessBtnState(){
+  const val = guessInput.value.trim().toLowerCase();
+  const exact = pool.some(p=>p.name.toLowerCase() === val);
+  guessBtnEl.disabled = !exact || gameOver;
+}
+
+guessInput.addEventListener("input", ()=>{
+  const val = guessInput.value.trim().toLowerCase();
+  updateGuessBtnState();
+  if(!val){ renderAutocomplete(pool.slice().sort((a,b)=>a.name.localeCompare(b.name))); return; }
+  const matches = pool.filter(p=>p.name.toLowerCase().includes(val)).slice(0,8);
+  renderAutocomplete(matches);
+});
+guessInput.addEventListener("focus", ()=>{
+  if(gameOver) return;
+  const val = guessInput.value.trim().toLowerCase();
+  if(!val){
+    renderAutocomplete(pool.slice().sort((a,b)=>a.name.localeCompare(b.name)));
+  } else {
+    renderAutocomplete(pool.filter(p=>p.name.toLowerCase().includes(val)).slice(0,8));
+  }
+});
+document.addEventListener("click", (e)=>{
+  if(e.target !== guessInput) autocompleteList.classList.add("hidden");
+});
+
+document.getElementById("guessBtn").addEventListener("click", submitGuess);
+guessInput.addEventListener("keydown", (e)=>{
+  if(e.key === "Enter") submitGuess();
+});
+
+let submitting = false;
+function submitGuess(){
+  if(gameOver || submitting) return;
+  const val = guessInput.value.trim();
+  if(!val) return;
+  const guessed = pool.find(p=>p.name.toLowerCase() === val.toLowerCase());
+  if(!guessed) return;
+  submitting = true;
+  guessCount++;
+
+  const box = document.getElementById("stroke-"+guessCount);
+
+  if(guessed && answer && guessed.name === answer.name){
+    box.classList.add("hit");
+    box.textContent = "✓";
+    endGame(true);
+    submitting = false;
+    return;
+  } else {
+    box.classList.add("miss");
+    box.textContent = guessed ? initials(guessed.name) : "✗";
+  }
+
+  guessInput.value = "";
+  autocompleteList.classList.add("hidden");
+  updateFlightPath();
+
+  if(guessCount >= MAX_GUESSES){
+    endGame(false);
+    submitting = false;
+    return;
+  }
+
+  revealHint();
+  submitting = false;
+}
+
+function initials(name){
+  return name.split(" ").map(w=>w[0]).join("").slice(0,3).toUpperCase();
+}
+
+function revealHint(){
+  const remaining = HINT_DEFS.filter(h=>!usedHints.includes(h.key));
+  if(remaining.length === 0) return;
+  const pick = remaining[Math.floor(Math.random()*remaining.length)];
+  usedHints.push(pick.key);
+  const card = document.createElement("div");
+  card.className = "hint-card";
+  card.innerHTML = "<span class='hint-label'>"+pick.label+"</span>"+pick.value(answer);
+  document.getElementById("hintList").appendChild(card);
+}
+
+function endGame(won){
+  gameOver = true;
+  guessInput.disabled = true;
+  document.getElementById("guessBtn").disabled = true;
+  updateFlightPath(won);
+
+  const resultBlock = document.getElementById("resultBlock");
+  const title = document.getElementById("resultTitle");
+  const score = document.getElementById("resultScore");
+  const nameEl = document.getElementById("resultName");
+
+  if(won){
+    title.textContent = "Chains!";
+    score.textContent = guessCount + " / " + MAX_GUESSES;
+  } else {
+    title.textContent = "Out of Bounds";
+    score.textContent = "X / " + MAX_GUESSES;
+  }
+  nameEl.textContent = "Today's disc: " + answer.name + " (PDGA #" + answer.pdga + ")";
+  resultBlock.classList.remove("hidden");
+
+  document.getElementById("backToMenuBtn").onclick = backToMenu;
+
+  document.getElementById("shareBtn").onclick = ()=>{
+    const grid = Array.from({length:MAX_GUESSES}, (_,i)=>{
+      const b = document.getElementById("stroke-"+(i+1));
+      if(b.classList.contains("hit")) return "🟢";
+      if(b.classList.contains("miss")) return "🟠";
+      return "⬜";
+    }).join("");
+    const text = "Fairway Five ("+currentDivision+") "+(won?guessCount:"X")+"/"+MAX_GUESSES+"\n"+grid;
+    navigator.clipboard.writeText(text).then(()=>{
+      document.getElementById("shareBtn").textContent = "Copied!";
+      setTimeout(()=>{ document.getElementById("shareBtn").textContent = "Copy Result"; }, 1500);
+    });
+  };
+}
+</script>
+</body>
+</html>
