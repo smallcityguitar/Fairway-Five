@@ -37,13 +37,6 @@
     text-align:center;
     margin-bottom:18px;
   }
-  .brand .eyebrow{
-    font-family:'JetBrains Mono', monospace;
-    font-size:11px;
-    letter-spacing:0.24em;
-    color:var(--ice);
-    text-transform:uppercase;
-  }
   .brand h1{
     font-size:34px;
     font-weight:700;
@@ -82,6 +75,8 @@
     transition:transform .12s ease, background .12s ease;
   }
   .disc-btn:hover{ background:var(--orange); transform:translateY(-2px); }
+  .disc-btn:disabled{ opacity:0.5; cursor:not-allowed; transform:none; }
+  .disc-btn:disabled:hover{ background:var(--green-mid); }
   .disc-btn .disc-icon{
     width:26px;height:26px;border-radius:50%;
     background:var(--cream);
@@ -289,8 +284,7 @@
 <body>
 <div class="app">
   <div class="brand">
-    <div class="eyebrow" id="brandEyebrow">Goeringer Discs Presents</div>
-    <h1>Fairway <span>Five</span></h1>
+    <h1 id="brandTitle">Fairway <span>Five</span></h1>
   </div>
 
   <div class="card" id="pickScreen">
@@ -337,19 +331,17 @@
   </div>
 
   <p class="footnote">
-    Live data verified directly from PDGA.com and StatMando (as of 09-Jul-2026). All 80 top-40 MPO/FPO players have real hometown, C1X%, and standing. Rating + best-finish are fully confirmed for 13 players so far (the rest are being filled in batches) — the daily answer is only ever picked from a fully-confirmed player, but any of the 80 names can be guessed.
+    Player data loads live from this project's players.json on GitHub (refreshed automatically — see refresh-data.yml), falling back to a locally-bundled snapshot if the fetch fails. The daily answer is only ever picked from a player with a complete profile (rating, hometown, C1X%, best finish); all players in the pool remain guessable regardless.
   </p>
 </div>
 
 <script>
-/* ============ REAL DATA — verified live, 09-Jul-2026 ============
-   hometown, standing (DGPT rank), and c1x are confirmed for all 80 top-40
-   MPO/FPO players, pulled from statmando.com and PDGA.com tournament rosters.
-   rating + majorFinish are confirmed for players profiled so far via full
-   PDGA.com player-page fetches; the rest are `null` until fetched in a later
-   batch (game only picks the daily answer from players with a complete
-   profile, but all 80 names are still guessable). */
-const PLAYERS = [
+/* ============ FALLBACK DATA — snapshot from 09-Jul-2026 ============
+   This is only used if the live players.json fetch (below) fails, e.g. if
+   the person is offline or the GitHub raw URL isn't reachable. The real,
+   continuously-refreshed data lives in players.json, kept current by the
+   GitHub Action (.github/workflows/refresh-data.yml) in the repo. */
+const FALLBACK_PLAYERS = [
   // ===== MPO (DGPT World Standings, top 40) =====
   {name:"Gannon Buhr", pdga:75412, div:"MPO", rating:1061, hometown:"Urbandale, IA", c1x:90.9, majorFinish:"1st, Queen City Classic (ES)", standing:"1st"},
   {name:"Richard Wysocki", pdga:38008, div:"MPO", rating:1046, hometown:"Scottsdale, AZ", c1x:86.8, majorFinish:"1st, Supreme Flight Open (ES)", standing:"2nd"},
@@ -443,6 +435,37 @@ const HINT_DEFS = [
   {key:"rating", label:"Current PDGA Rating", value:p=>p.rating},
 ];
 
+// ===== CONFIG: point this at your repo's raw players.json =====
+// e.g. "https://raw.githubusercontent.com/<user>/<repo>/main/players.json"
+// Kept fresh by .github/workflows/refresh-data.yml. Replace the placeholder
+// below with your actual repo path once it's pushed to GitHub.
+const PLAYERS_JSON_URL = "https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/players.json";
+
+let PLAYERS = FALLBACK_PLAYERS;
+
+async function loadPlayers(){
+  try{
+    const res = await fetch(PLAYERS_JSON_URL, {cache:"no-store"});
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    if(Array.isArray(data) && data.length > 0){
+      PLAYERS = data;
+      console.log("Loaded live players.json (" + data.length + " players)");
+    } else {
+      throw new Error("players.json was empty or malformed");
+    }
+  } catch(err){
+    console.warn("Live players.json fetch failed, using fallback snapshot:", err.message);
+    PLAYERS = FALLBACK_PLAYERS;
+  }
+  setPickScreenReady();
+}
+
+function setPickScreenReady(){
+  document.querySelectorAll(".disc-btn").forEach(btn=>btn.disabled = false);
+  document.getElementById("dateLabel").textContent = "Today's puzzle · " + todayStr();
+}
+
 const MAX_GUESSES = 5;
 let pool = [];
 let answer = null;
@@ -470,7 +493,8 @@ function todayStr(){
   return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
 }
 
-document.getElementById("dateLabel").textContent = "Today's puzzle · " + todayStr();
+document.getElementById("dateLabel").textContent = "Loading today's field…";
+document.querySelectorAll(".disc-btn").forEach(btn=>btn.disabled = true);
 
 document.querySelectorAll(".disc-btn").forEach(btn=>{
   btn.addEventListener("click", ()=>{
@@ -479,8 +503,10 @@ document.querySelectorAll(".disc-btn").forEach(btn=>{
   });
 });
 
+loadPlayers();
+
 let debugTapCount = 0;
-document.getElementById("brandEyebrow").addEventListener("click", ()=>{
+document.getElementById("brandTitle").addEventListener("click", ()=>{
   debugTapCount++;
   if(debugTapCount >= 5){
     document.getElementById("debugBtn").classList.remove("hidden");
@@ -562,16 +588,14 @@ function updateFlightPath(won){
   const dot = document.getElementById("discDot");
   const caption = document.getElementById("flightCaption");
   const pct = guessCount / MAX_GUESSES;
-  const totalLen = 420;
-  progress.setAttribute("stroke-dasharray", (pct*totalLen) + " 1000");
 
-  // Move dot along a rough approximation of the quadratic curve
-  const t = pct;
-  const x0=20,y0=70,cx=200,cy=-20,x1=380,y1=70;
-  const x = (1-t)*(1-t)*x0 + 2*(1-t)*t*cx + t*t*x1;
-  const y = (1-t)*(1-t)*y0 + 2*(1-t)*t*cy + t*t*y1;
-  dot.setAttribute("cx", x);
-  dot.setAttribute("cy", y);
+  const totalLen = progress.getTotalLength();
+  const drawLen = pct * totalLen;
+  progress.setAttribute("stroke-dasharray", drawLen + " " + totalLen);
+
+  const point = progress.getPointAtLength(drawLen);
+  dot.setAttribute("cx", point.x);
+  dot.setAttribute("cy", point.y);
 
   if(gameOver){
     caption.textContent = won ? "CHAINS · HOLED OUT" : "OUT OF BOUNDS";
