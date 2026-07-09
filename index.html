@@ -92,6 +92,17 @@
   .disc-btn:hover{ background:var(--orange); transform:translateY(-2px); }
   .disc-btn:disabled{ opacity:0.5; cursor:not-allowed; transform:none; }
   .disc-btn:disabled:hover{ background:var(--green-mid); }
+  .status-badge{
+    margin-left:auto;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:0.03em;
+    text-transform:none;
+  }
+  .status-badge.status-won{ color:#8fd9a8; }
+  .status-badge.status-failed{ color:#e88a76; }
+  .status-badge.status-progress{ color:var(--cream-dim); letter-spacing:0.25em; }
   .disc-btn .disc-icon{
     width:26px;height:26px;border-radius:50%;
     background:var(--cream);
@@ -392,9 +403,9 @@
 
   <div class="card" id="pickScreen">
     <p style="font-family:'JetBrains Mono',monospace;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#5a5142;text-align:center;margin-top:0;">Choose your field</p>
-    <button class="disc-btn" data-div="MPO"><span class="disc-icon"></span> MPO</button>
-    <button class="disc-btn" data-div="FPO"><span class="disc-icon"></span> FPO</button>
-    <button class="disc-btn" data-div="MIX"><span class="disc-icon"></span> Mixed Field</button>
+    <button class="disc-btn" data-div="MPO"><span class="disc-icon"></span> MPO <span class="status-badge" data-status-for="MPO"></span></button>
+    <button class="disc-btn" data-div="FPO"><span class="disc-icon"></span> FPO <span class="status-badge" data-status-for="FPO"></span></button>
+    <button class="disc-btn" data-div="MIX"><span class="disc-icon"></span> Mixed Field <span class="status-badge" data-status-for="MIX"></span></button>
     <div class="pick-sub" id="dateLabel"></div>
     <button class="howto-btn" id="howToPlayBtn">❔ How to Play</button>
     <button class="debug-btn hidden" id="debugBtn">🛠 Debug: Random Player</button>
@@ -609,6 +620,7 @@ async function loadPlayers(){
 function setPickScreenReady(){
   document.querySelectorAll(".disc-btn").forEach(btn=>btn.disabled = false);
   document.getElementById("dateLabel").textContent = "Today's puzzle · " + todayStr();
+  updateMenuStatusBadges();
 }
 
 const MAX_GUESSES = 5;
@@ -687,6 +699,7 @@ document.getElementById("howToPlayOverlay").addEventListener("click", (e)=>{
 function backToMenu(){
   document.getElementById("gameScreen").classList.add("hidden");
   document.getElementById("pickScreen").classList.remove("hidden");
+  updateMenuStatusBadges();
 }
 
 // Base version for all divisions. To reshuffle just ONE division's puzzle
@@ -725,13 +738,46 @@ function storageKey(div){
 
 function saveProgress(){
   if(currentDivision === "DEBUG") return; // debug rounds are never persisted
+  const lastGuess = guessHistory[guessHistory.length-1];
+  const won = gameOver && lastGuess && answer && lastGuess.toLowerCase() === answer.name.toLowerCase();
   try{
     localStorage.setItem(storageKey(currentDivision), JSON.stringify({
       answer: answer.name,
       guesses: guessHistory,
       gameOver,
+      won,
     }));
   } catch(e){ /* localStorage unavailable (private browsing etc.) — fail silently */ }
+  updateMenuStatusBadges();
+}
+
+function updateMenuStatusBadges(){
+  ["MPO","FPO","MIX"].forEach(div=>{
+    const badge = document.querySelector('.status-badge[data-status-for="'+div+'"]');
+    if(!badge) return;
+
+    let todaysAnswer;
+    try{ todaysAnswer = getDailyAnswer(div); } catch(e){ todaysAnswer = null; }
+
+    const saved = loadProgress(div);
+    badge.className = "status-badge";
+    badge.textContent = "";
+
+    if(!todaysAnswer || !saved || saved.answer !== todaysAnswer.name) return;
+
+    if(saved.gameOver){
+      if(saved.won){
+        badge.textContent = "✓ " + saved.guesses.length + "/" + MAX_GUESSES;
+        badge.classList.add("status-won");
+      } else {
+        badge.textContent = "✗";
+        badge.classList.add("status-failed");
+      }
+    } else if(Array.isArray(saved.guesses) && saved.guesses.length > 0){
+      badge.textContent = "···";
+      badge.classList.add("status-progress");
+    }
+  });
 }
 
 function loadProgress(div){
