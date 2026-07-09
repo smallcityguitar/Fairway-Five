@@ -43,6 +43,7 @@
     letter-spacing:0.02em;
     margin:4px 0 0;
     text-transform:uppercase;
+    cursor:pointer;
   }
   .brand h1 span{ color:var(--orange); }
 
@@ -485,6 +486,7 @@ let answer = null;
 let guessCount = 0;
 let usedHints = [];
 let hintOrder = [];
+let guessHistory = [];
 let gameOver = false;
 let currentDivision = "MPO";
 
@@ -533,6 +535,9 @@ document.getElementById("brandTitle").addEventListener("click", ()=>{
   if(debugTapCount >= 5){
     document.getElementById("debugBtn").classList.remove("hidden");
   }
+  if(!document.getElementById("gameScreen").classList.contains("hidden")){
+    backToMenu();
+  }
 });
 document.getElementById("debugBtn").addEventListener("click", startDebugGame);
 
@@ -571,10 +576,45 @@ function getDailyAnswer(div){
   return candidates[Math.floor(rand()*candidates.length)];
 }
 
+function storageKey(div){
+  return "fairwayfive_progress_" + todayStr() + "_" + div;
+}
+
+function saveProgress(){
+  if(currentDivision === "DEBUG") return; // debug rounds are never persisted
+  try{
+    localStorage.setItem(storageKey(currentDivision), JSON.stringify({
+      answer: answer.name,
+      guesses: guessHistory,
+      gameOver,
+    }));
+  } catch(e){ /* localStorage unavailable (private browsing etc.) — fail silently */ }
+}
+
+function loadProgress(div){
+  if(div === "DEBUG") return null;
+  try{
+    const raw = localStorage.getItem(storageKey(div));
+    if(!raw) return null;
+    return JSON.parse(raw);
+  } catch(e){ return null; }
+}
+
 function startGame(div){
   pool = div === "MIX" ? PLAYERS.slice() : PLAYERS.filter(p=>p.div===div);
   answer = getDailyAnswer(div);
   beginRound(div);
+
+  // Restore any progress already made on today's puzzle for this division —
+  // this is what stops "back to menu, pick the same division again" from
+  // acting as a free reset/retry.
+  const saved = loadProgress(div);
+  if(saved && saved.answer === answer.name && Array.isArray(saved.guesses)){
+    for(const name of saved.guesses){
+      if(gameOver) break;
+      applyGuess(name);
+    }
+  }
 }
 
 function startDebugGame(){
@@ -598,6 +638,7 @@ function seededShuffle(array, seed){
 function beginRound(label){
   guessCount = 0;
   usedHints = [];
+  guessHistory = [];
   gameOver = false;
 
   const hintSeed = dateSeed(todayStr() + "-" + answer.name + "-hints-v" + SEED_VERSION);
@@ -632,7 +673,23 @@ function buildStrokeTracker(){
   }
 }
 
-function updateFlightPath(won){
+const STAGE_LABELS = {
+  1: "Teeing Off",
+  2: "In The Fairway",
+  3: "Approaching",
+  4: "Putting",
+  5: "Putting",
+};
+const WIN_LABELS = {
+  1: "Ace!",
+  2: "Throw In!",
+  3: "Throw In!",
+  4: "Nice Putt!",
+  5: "Nice Putt!",
+};
+const LOSS_LABELS = ["Off The Band", "Hit The Cage", "Chained Out"];
+
+function updateFlightPath(won, gameOverLabel){
   const progress = document.getElementById("discProgress");
   const dot = document.getElementById("discDot");
   const caption = document.getElementById("flightCaption");
@@ -647,9 +704,10 @@ function updateFlightPath(won){
   dot.setAttribute("cy", point.y);
 
   if(gameOver){
-    caption.textContent = won ? "CHAINS · HOLED OUT" : "OUT OF BOUNDS";
+    caption.textContent = gameOverLabel ? gameOverLabel.toUpperCase() : (won ? "HOLED OUT" : "OUT OF BOUNDS");
   } else {
-    caption.textContent = "STROKE " + (guessCount+1) + " OF " + MAX_GUESSES + " · IN FLIGHT";
+    const stage = STAGE_LABELS[guessCount+1] || "In Flight";
+    caption.textContent = "STROKE " + (guessCount+1) + " OF " + MAX_GUESSES + " · " + stage.toUpperCase();
   }
 }
 
@@ -707,14 +765,11 @@ guessInput.addEventListener("keydown", (e)=>{
 });
 
 let submitting = false;
-function submitGuess(){
-  if(gameOver || submitting) return;
-  const val = guessInput.value.trim();
-  if(!val) return;
-  const guessed = pool.find(p=>p.name.toLowerCase() === val.toLowerCase());
-  if(!guessed) return;
-  submitting = true;
+
+function applyGuess(name){
+  const guessed = pool.find(p=>p.name.toLowerCase() === name.toLowerCase());
   guessCount++;
+  guessHistory.push(name);
 
   const box = document.getElementById("stroke-"+guessCount);
 
@@ -722,24 +777,35 @@ function submitGuess(){
     box.classList.add("hit");
     box.textContent = "✓";
     endGame(true);
-    submitting = false;
+    saveProgress();
     return;
   } else {
     box.classList.add("miss");
     box.textContent = guessed ? initials(guessed.name) : "✗";
   }
 
-  guessInput.value = "";
-  autocompleteList.classList.add("hidden");
   updateFlightPath();
 
   if(guessCount >= MAX_GUESSES){
     endGame(false);
-    submitting = false;
+    saveProgress();
     return;
   }
 
   revealHint();
+  saveProgress();
+}
+
+function submitGuess(){
+  if(gameOver || submitting) return;
+  const val = guessInput.value.trim();
+  if(!val) return;
+  const guessed = pool.find(p=>p.name.toLowerCase() === val.toLowerCase());
+  if(!guessed) return;
+  submitting = true;
+  guessInput.value = "";
+  autocompleteList.classList.add("hidden");
+  applyGuess(guessed.name);
   submitting = false;
 }
 
@@ -761,20 +827,20 @@ function endGame(won){
   gameOver = true;
   guessInput.disabled = true;
   document.getElementById("guessBtn").disabled = true;
-  updateFlightPath(won);
+
+  const resultLabel = won
+    ? (WIN_LABELS[guessCount] || "Chains!")
+    : LOSS_LABELS[Math.floor(seededRandom(dateSeed(todayStr() + "-" + answer.name + "-loss-v" + SEED_VERSION))() * LOSS_LABELS.length)];
+
+  updateFlightPath(won, resultLabel);
 
   const resultBlock = document.getElementById("resultBlock");
   const title = document.getElementById("resultTitle");
   const score = document.getElementById("resultScore");
   const nameEl = document.getElementById("resultName");
 
-  if(won){
-    title.textContent = "Chains!";
-    score.textContent = guessCount + " / " + MAX_GUESSES;
-  } else {
-    title.textContent = "Out of Bounds";
-    score.textContent = "X / " + MAX_GUESSES;
-  }
+  title.textContent = resultLabel;
+  score.textContent = (won ? guessCount : "X") + " / " + MAX_GUESSES;
   nameEl.textContent = "Today's Player: " + answer.name + " (PDGA #" + answer.pdga + ")";
   resultBlock.classList.remove("hidden");
 

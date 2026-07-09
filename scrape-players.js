@@ -170,8 +170,10 @@ async function getPdgaProfile(pdgaNumber, year = 2026) {
   if (ratingMatch) rating = parseInt(ratingMatch[1], 10);
 
   // Walk the results table(s); collect rows whose Tier column is M or ES,
-  // keep the best (lowest) Place, and remember which tournament it was.
-  let best = null;
+  // track the best (lowest) Place, and remember every tournament tied at
+  // that place — not just the first one encountered.
+  let bestPlace = null;
+  let bestTourneys = [];
   $('table tr').each((i, el) => {
     const cells = $(el).find('td');
     if (cells.length < 5) return;
@@ -179,7 +181,12 @@ async function getPdgaProfile(pdgaNumber, year = 2026) {
     const tier = $(cells[3]).text().trim(); // column order: Place, Points, Tournament, Tier, Dates, Prize
     const tourney = $(cells[2]).text().trim();
     if ((tier === 'M' || tier === 'ES') && !isNaN(place)) {
-      if (!best || place < best.place) best = { place, tourney, tier };
+      if (bestPlace === null || place < bestPlace) {
+        bestPlace = place;
+        bestTourneys = [{ tourney, tier }];
+      } else if (place === bestPlace) {
+        bestTourneys.push({ tourney, tier });
+      }
     }
   });
 
@@ -193,11 +200,11 @@ async function getPdgaProfile(pdgaNumber, year = 2026) {
     throw new Error(`Parsing failed for PDGA #${pdgaNumber} (hometown=${hometown}, rating=${rating}) — PDGA page markup may have changed, check getPdgaProfile()`);
   }
 
-  return {
-    hometown,
-    rating,
-    majorFinish: best ? `${ordinal(best.place)}, ${best.tourney} (${best.tier})` : 'No M/ES finish yet this year',
-  };
+  const majorFinish = bestPlace !== null
+    ? `${ordinal(bestPlace)}, ${bestTourneys.map(t => `${t.tourney} (${t.tier})`).join(' & ')}`
+    : 'No M/ES finish yet this year';
+
+  return { hometown, rating, majorFinish };
 }
 
 function ordinal(n) {
