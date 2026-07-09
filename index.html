@@ -331,7 +331,7 @@
   </div>
 
   <p class="footnote">
-    Player data loads live from this project's players.json on GitHub (refreshed automatically — see refresh-data.yml), falling back to a locally-bundled snapshot if the fetch fails. The daily answer is only ever picked from a player with a complete profile (rating, hometown, C1X%, best finish); all players in the pool remain guessable regardless.
+    Only the current top 40 MPO and top 40 FPO Tour standings are included. Stats update regularly throughout the season.
   </p>
 </div>
 
@@ -439,7 +439,7 @@ const HINT_DEFS = [
 // e.g. "https://raw.githubusercontent.com/<user>/<repo>/main/players.json"
 // Kept fresh by .github/workflows/refresh-data.yml. Replace the placeholder
 // below with your actual repo path once it's pushed to GitHub.
-const PLAYERS_JSON_URL = "https://raw.githubusercontent.com/smallcityguitar/Fairway-Five/main/players.json";
+const PLAYERS_JSON_URL = "https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/players.json";
 
 let PLAYERS = FALLBACK_PLAYERS;
 
@@ -739,7 +739,8 @@ function endGame(won){
       if(b.classList.contains("miss")) return "🟠";
       return "⬜";
     }).join("");
-    const text = "Fairway Five ("+currentDivision+") "+(won?guessCount:"X")+"/"+MAX_GUESSES+"\n"+grid;
+    const shareDate = new Date().toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
+    const text = "Fairway Five ("+currentDivision+") "+shareDate+" "+(won?guessCount:"X")+"/"+MAX_GUESSES+"\n"+grid;
     navigator.clipboard.writeText(text).then(()=>{
       document.getElementById("shareBtn").textContent = "Copied!";
       setTimeout(()=>{ document.getElementById("shareBtn").textContent = "Copy Result"; }, 1500);
