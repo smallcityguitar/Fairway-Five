@@ -471,6 +471,7 @@ let pool = [];
 let answer = null;
 let guessCount = 0;
 let usedHints = [];
+let hintOrder = [];
 let gameOver = false;
 let currentDivision = "MPO";
 
@@ -530,7 +531,7 @@ function backToMenu(){
 // Bump this any time a day's puzzle needs a reshuffle (e.g. today's pick
 // turned out too easy/hard) — changes the seed without waiting for the date
 // to roll over. Affects all divisions since the daily seed includes it.
-const SEED_VERSION = 2;
+const SEED_VERSION = 3;
 
 function getDailyAnswer(div){
   const answerPool = PLAYERS.filter(p=>
@@ -567,10 +568,23 @@ function startDebugGame(){
   beginRound("DEBUG · " + answer.div);
 }
 
+function seededShuffle(array, seed){
+  const rand = seededRandom(seed);
+  const arr = array.slice();
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(rand()*(i+1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 function beginRound(label){
   guessCount = 0;
   usedHints = [];
   gameOver = false;
+
+  const hintSeed = dateSeed(todayStr() + "-" + answer.name + "-hints-v" + SEED_VERSION);
+  hintOrder = seededShuffle(HINT_DEFS, hintSeed);
 
   document.getElementById("pickScreen").classList.add("hidden");
   document.getElementById("gameScreen").classList.remove("hidden");
@@ -713,9 +727,8 @@ function initials(name){
 }
 
 function revealHint(){
-  const remaining = HINT_DEFS.filter(h=>!usedHints.includes(h.key));
-  if(remaining.length === 0) return;
-  const pick = remaining[Math.floor(Math.random()*remaining.length)];
+  const pick = hintOrder[usedHints.length];
+  if(!pick) return;
   usedHints.push(pick.key);
   const card = document.createElement("div");
   card.className = "hint-card";
