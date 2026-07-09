@@ -271,6 +271,94 @@
     cursor:pointer;
   }
   .debug-btn:hover{ background:var(--cream-dim); }
+  .howto-btn{
+    width:100%;
+    margin-top:10px;
+    background:var(--cream-dim);
+    border:none;
+    color:var(--ink);
+    padding:10px 14px;
+    border-radius:8px;
+    font-family:'Oswald', sans-serif;
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
+    cursor:pointer;
+  }
+  .howto-btn:hover{ background:#cfc6a8; }
+
+  .modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.55);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:100;
+  }
+  .modal-card{
+    background:var(--cream);
+    color:var(--ink);
+    border-radius:14px;
+    padding:26px 22px 20px;
+    max-width:440px;
+    width:100%;
+    max-height:85vh;
+    overflow-y:auto;
+    position:relative;
+    box-shadow:0 20px 50px rgba(0,0,0,0.4);
+  }
+  .modal-close{
+    position:absolute;
+    top:14px; right:14px;
+    background:none;
+    border:none;
+    font-size:18px;
+    color:var(--miss);
+    cursor:pointer;
+    line-height:1;
+    padding:4px;
+  }
+  .modal-title{
+    font-family:'Oswald', sans-serif;
+    text-transform:uppercase;
+    font-size:22px;
+    margin:0 0 14px;
+    color:var(--green-mid);
+  }
+  .modal-body{
+    font-size:14px;
+    line-height:1.55;
+    margin:0 0 12px;
+  }
+  .modal-list{
+    margin:0 0 12px;
+    padding-left:20px;
+    font-size:14px;
+    line-height:1.6;
+  }
+  .modal-example{
+    background:#fff;
+    border-left:4px solid var(--ice);
+    border-radius:6px;
+    padding:12px 14px;
+    margin:0 0 14px;
+    font-size:13px;
+    line-height:1.6;
+  }
+  .modal-example div{ margin-bottom:6px; }
+  .modal-example div:last-child{ margin-bottom:0; }
+  .ex-stroke{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    color:var(--green-mid);
+    display:block;
+    margin-bottom:2px;
+  }
   .footnote{
     text-align:center;
     font-family:'JetBrains Mono', monospace;
@@ -294,7 +382,36 @@
     <button class="disc-btn" data-div="FPO"><span class="disc-icon"></span> FPO</button>
     <button class="disc-btn" data-div="MIX"><span class="disc-icon"></span> Mixed Field</button>
     <div class="pick-sub" id="dateLabel"></div>
+    <button class="howto-btn" id="howToPlayBtn">❔ How to Play</button>
     <button class="debug-btn hidden" id="debugBtn">🛠 Debug: Random Player</button>
+  </div>
+
+  <div class="modal-overlay hidden" id="howToPlayOverlay">
+    <div class="modal-card">
+      <button class="modal-close" id="howToPlayClose">✕</button>
+      <h2 class="modal-title">How to Play</h2>
+
+      <p class="modal-body"><strong>Guess the mystery DGPT pro</strong> in 5 tries or fewer. Pick MPO, FPO, or Mixed Field — everyone playing that division on the same day gets the same puzzle.</p>
+
+      <p class="modal-body">You start with nothing but a flight path. Each wrong guess reveals one hint, randomly chosen from:</p>
+      <ul class="modal-list">
+        <li>Hometown</li>
+        <li>C1X Putting %</li>
+        <li>Best Major/Elite Series finish this year</li>
+        <li>Current Pro Tour standing</li>
+        <li>Current PDGA rating</li>
+      </ul>
+      <p class="modal-body">There are 5 possible hints but only 4 ever get revealed — one per wrong guess on strokes 1–4. Your 5th guess, if you need it, is your last shot with no new hint attached.</p>
+
+      <p class="modal-body"><strong>Example round:</strong></p>
+      <div class="modal-example">
+        <div><span class="ex-stroke">Stroke 1 — Teeing Off:</span> guess "Paul McBeth" → miss → hint: <em>Hometown: Huntington Beach, CA</em></div>
+        <div><span class="ex-stroke">Stroke 2 — In The Fairway:</span> guess "Gannon Buhr" → miss → hint: <em>C1X Putting %: 90.9%</em></div>
+        <div><span class="ex-stroke">Stroke 3 — Approaching:</span> guess "Richard Wysocki" → correct! → <em>"Throw In!" — scored 3/5</em></div>
+      </div>
+
+      <p class="modal-body">Only the current top 40 MPO and top 40 FPO Tour standings are included as possible answers, though all of them are guessable regardless. Use "Copy Result" after a round to share your score as an emoji grid.</p>
+    </div>
   </div>
 
   <div class="card hidden" id="gameScreen">
@@ -540,6 +657,18 @@ document.getElementById("brandTitle").addEventListener("click", ()=>{
   }
 });
 document.getElementById("debugBtn").addEventListener("click", startDebugGame);
+
+document.getElementById("howToPlayBtn").addEventListener("click", ()=>{
+  document.getElementById("howToPlayOverlay").classList.remove("hidden");
+});
+document.getElementById("howToPlayClose").addEventListener("click", ()=>{
+  document.getElementById("howToPlayOverlay").classList.add("hidden");
+});
+document.getElementById("howToPlayOverlay").addEventListener("click", (e)=>{
+  if(e.target.id === "howToPlayOverlay"){
+    document.getElementById("howToPlayOverlay").classList.add("hidden");
+  }
+});
 
 function backToMenu(){
   document.getElementById("gameScreen").classList.add("hidden");
