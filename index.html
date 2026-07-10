@@ -53,6 +53,13 @@
     --green-mid:#1c5480;
     --bg-highlight:#1f4c68;
   }
+  /* Colorblind-friendly mode swaps the green "hit"/"others" signal color for
+     blue — blue+orange is the standard safe pairing for the common forms of
+     red-green colorblindness, where green and orange can otherwise read as
+     similar. Orange stays orange throughout; only green-coded elements change. */
+  body.colorblind-mode .stroke-box.hit{ background:#2f6690; border-color:#2f6690; }
+  body.colorblind-mode .histogram-row-fill{ background:#2f6690; }
+  body.colorblind-mode .disc-btn .disc-icon::after{ background:#2f6690; }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
@@ -494,6 +501,55 @@
     display:block;
     margin-bottom:2px;
   }
+  .stats-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:18px;
+  }
+  .stats-tile{
+    background:#fff;
+    border-radius:8px;
+    padding:12px;
+    text-align:center;
+  }
+  .stats-tile .num{
+    font-family:'JetBrains Mono', monospace;
+    font-size:28px;
+    font-weight:700;
+    color:var(--orange-dim);
+    line-height:1.1;
+  }
+  .stats-tile .lbl{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--miss);
+    margin-top:4px;
+  }
+  .stats-section-title{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--miss);
+    margin:16px 0 8px;
+  }
+  .past-puzzle-form{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .past-puzzle-form input, .past-puzzle-form select{
+    padding:9px 10px;
+    border-radius:8px;
+    border:1px solid var(--cream-dim);
+    font-family:'Oswald', sans-serif;
+    font-size:14px;
+    background:#fff;
+    color:var(--ink);
+  }
   .footnote{
     text-align:center;
     font-family:'JetBrains Mono', monospace;
@@ -528,6 +584,26 @@
     border-color:var(--green-mid);
     color:var(--cream);
   }
+  .toggle-btn{
+    width:100%;
+    margin-top:10px;
+    background:none;
+    border:1px solid var(--cream-dim);
+    color:#7a7259;
+    padding:9px 10px;
+    border-radius:10px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:0.02em;
+    cursor:pointer;
+    transition:background-color .3s ease, border-color .3s ease, color .3s ease;
+  }
+  .toggle-btn.active{
+    background:var(--green-mid);
+    border-color:var(--green-mid);
+    color:var(--cream);
+  }
 </style>
 </head>
 <body>
@@ -547,7 +623,11 @@
     <button class="disc-btn" data-div="MIX"><span class="disc-icon"></span> Mixed Field <span class="status-badge" data-status-for="MIX"></span></button>
     <div class="pick-sub" id="dateLabel"></div>
     <button class="howto-btn" id="howToPlayBtn">❔ How to Play</button>
+    <button class="howto-btn" id="statsBtn">📊 My Stats</button>
+    <button class="howto-btn" id="pastPuzzlesBtn">📅 Past Puzzles</button>
+    <button class="toggle-btn" id="colorblindToggle">🎨 Colorblind-Friendly Colors</button>
     <button class="debug-btn hidden" id="debugBtn">🛠 Debug: Random Player</button>
+    <button class="debug-btn hidden" id="debugAllHintsBtn">🔍 Debug: Show All Hints</button>
   </div>
 
   <div class="modal-overlay hidden" id="howToPlayOverlay">
@@ -564,8 +644,11 @@
         <li>Best Major/Elite Series finish this year</li>
         <li>Current Pro Tour standing</li>
         <li>Current PDGA rating</li>
+        <li>Major/Elite Series events played this season</li>
+        <li>Average Major/Elite Series finish this season</li>
+        <li>PDGA member since (actual join year)</li>
       </ul>
-      <p class="modal-body">There are 5 possible hints but only 4 ever get revealed — one per wrong guess on strokes 1–4. Your 5th guess, if you need it, is your last shot with no new hint attached.</p>
+      <p class="modal-body">There are 8 possible hints but only 4 ever get revealed — one per wrong guess on strokes 1–4, randomly chosen each day. Your 5th guess, if you need it, is your last shot with no new hint attached.</p>
 
       <p class="modal-body"><strong>Example round:</strong></p>
       <div class="modal-example">
@@ -575,6 +658,35 @@
       </div>
 
       <p class="modal-body">Only the current top 40 MPO and top 40 FPO Tour standings are included as possible answers, though all of them are guessable regardless. Use "Copy Result" after a round to share your score as an emoji grid.</p>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="statsOverlay">
+    <div class="modal-card">
+      <button class="modal-close" id="statsClose">✕</button>
+      <h2 class="modal-title">My Stats</h2>
+      <div id="statsContent"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="pastPuzzlesOverlay">
+    <div class="modal-card">
+      <button class="modal-close" id="pastPuzzlesClose">✕</button>
+      <h2 class="modal-title">Past Puzzles</h2>
+      <p class="modal-body">Pick a past date to replay that day's puzzle. Since player data keeps updating, this uses <em>today's</em> data to rebuild that day's pool — for very early days (before most players had full profiles), the reconstructed puzzle may not exactly match what was shown at the time.</p>
+      <div class="past-puzzle-form">
+        <input type="date" id="pastPuzzleDate">
+        <select id="pastPuzzleDiv">
+          <option value="MPO">MPO</option>
+          <option value="FPO">FPO</option>
+          <option value="MIX">Mixed Field</option>
+        </select>
+        <select id="pastPuzzleDifficulty">
+          <option value="normal">Normal</option>
+          <option value="easy">Easy</option>
+        </select>
+        <button class="share-btn" id="pastPuzzlePlayBtn">Play This Date</button>
+      </div>
     </div>
   </div>
 
@@ -721,6 +833,9 @@ const HINT_DEFS = [
   {key:"majorFinish", label:"Best Major/Elite Series Finish (this year)", value:p=>p.majorFinish},
   {key:"standing", label:"Current Pro Tour Standing", value:p=>p.standing},
   {key:"rating", label:"Current PDGA Rating", value:p=>p.rating},
+  {key:"eventsPlayed", label:"Major/Elite Series Events Played This Season", value:p=> p.eventsPlayed != null ? String(p.eventsPlayed) : null},
+  {key:"avgFinish", label:"Average Major/Elite Series Finish This Season", value:p=> p.avgFinish != null ? String(p.avgFinish) : null},
+  {key:"memberSince", label:"PDGA Member Since", value:p=> p.memberSince != null ? String(p.memberSince) : null},
 ];
 
 const MIN_HINTS_REQUIRED = 4;
@@ -800,7 +915,16 @@ function seededRandom(seed){
   };
 }
 
+let dateOverride = null; // set while playing a Past Puzzle; null = normal live play
+
 function todayStr(){
+  if(dateOverride) return dateOverride;
+  return realTodayStr();
+}
+
+// The actual current date, ignoring any Past Puzzle override — used for the
+// date picker's max bound and anywhere we need to know the real "now".
+function realTodayStr(){
   // Anchor "today" to Eastern time (handles EST/EDT automatically) so the
   // puzzle rolls over at the same moment for everyone, regardless of the
   // player's own device timezone.
@@ -811,6 +935,19 @@ function todayStr(){
   const map = {};
   parts.forEach(p => { map[p.type] = p.value; });
   return `${map.year}-${map.month}-${map.day}`;
+}
+
+// Zero-padded "YYYY-MM-DD" for N days before the real (Eastern-anchored)
+// today — used for <input type="date"> min/max/value, which require that
+// exact zero-padded format. n=0 is today, n=1 is yesterday, etc.
+function easternDateStrNDaysAgo(n){
+  const tm = realTodayStr().match(/^(\d+)-(\d+)-(\d+)$/);
+  const dayMillis = Date.UTC(+tm[1], +tm[2]-1, +tm[3], 12) - n*86400000;
+  const d = new Date(dayMillis);
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth()+1).padStart(2,"0");
+  const day = String(d.getUTCDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
 }
 
 document.getElementById("dateLabel").textContent = "Loading today's field…";
@@ -832,6 +969,17 @@ document.querySelectorAll(".diff-btn").forEach(btn=>{
   });
 });
 
+let colorblindMode = false;
+try{ colorblindMode = localStorage.getItem("fairwayfive_colorblind") === "1"; } catch(e){ /* ignore */ }
+document.body.classList.toggle("colorblind-mode", colorblindMode);
+document.getElementById("colorblindToggle").classList.toggle("active", colorblindMode);
+document.getElementById("colorblindToggle").addEventListener("click", ()=>{
+  colorblindMode = !colorblindMode;
+  document.body.classList.toggle("colorblind-mode", colorblindMode);
+  document.getElementById("colorblindToggle").classList.toggle("active", colorblindMode);
+  try{ localStorage.setItem("fairwayfive_colorblind", colorblindMode ? "1" : "0"); } catch(e){ /* ignore */ }
+});
+
 loadPlayers();
 
 let debugTapCount = 0;
@@ -839,12 +987,14 @@ document.getElementById("brandTitle").addEventListener("click", ()=>{
   debugTapCount++;
   if(debugTapCount >= 20){
     document.getElementById("debugBtn").classList.remove("hidden");
+    document.getElementById("debugAllHintsBtn").classList.remove("hidden");
   }
   if(!document.getElementById("gameScreen").classList.contains("hidden")){
     backToMenu();
   }
 });
 document.getElementById("debugBtn").addEventListener("click", startDebugGame);
+document.getElementById("debugAllHintsBtn").addEventListener("click", startDebugAllHintsGame);
 
 document.getElementById("howToPlayBtn").addEventListener("click", ()=>{
   document.getElementById("howToPlayOverlay").classList.remove("hidden");
@@ -858,7 +1008,144 @@ document.getElementById("howToPlayOverlay").addEventListener("click", (e)=>{
   }
 });
 
+// ===== My Stats =====
+document.getElementById("statsBtn").addEventListener("click", ()=>{
+  renderStatsModal();
+  document.getElementById("statsOverlay").classList.remove("hidden");
+});
+document.getElementById("statsClose").addEventListener("click", ()=>{
+  document.getElementById("statsOverlay").classList.add("hidden");
+});
+document.getElementById("statsOverlay").addEventListener("click", (e)=>{
+  if(e.target.id === "statsOverlay") document.getElementById("statsOverlay").classList.add("hidden");
+});
+
+function computeStatsSummary(){
+  const games = [];
+  try{
+    for(let i=0; i<localStorage.length; i++){
+      const key = localStorage.key(i);
+      if(!key || !key.startsWith("fairwayfive_progress_")) continue;
+      const raw = localStorage.getItem(key);
+      if(!raw) continue;
+      let parsed;
+      try{ parsed = JSON.parse(raw); } catch(e){ continue; }
+      if(!parsed.gameOver) continue;
+
+      const rest = key.slice("fairwayfive_progress_".length);
+      const parts = rest.split("_");
+      if(parts.length < 3) continue;
+      const difficulty = parts[parts.length-1];
+      const div = parts[parts.length-2];
+      const dateStr = parts.slice(0, parts.length-2).join("_");
+      const dm = dateStr.match(/^(\d+)-(\d+)-(\d+)$/);
+      if(!dm) continue;
+      const dayNum = Math.floor(Date.UTC(+dm[1], +dm[2]-1, +dm[3], 12) / 86400000);
+
+      games.push({
+        dayNum, div, difficulty,
+        won: !!parsed.won,
+        guesses: Array.isArray(parsed.guesses) ? parsed.guesses.length : null,
+      });
+    }
+  } catch(e){ /* localStorage unavailable — just show zeroes */ }
+
+  const played = games.length;
+  const wins = games.filter(g=>g.won).length;
+  const winPct = played > 0 ? Math.round((wins/played)*100) : 0;
+
+  const dist = {1:0,2:0,3:0,4:0,5:0};
+  games.forEach(g=>{ if(g.won && g.guesses>=1 && g.guesses<=5) dist[g.guesses]++; });
+
+  const winDaysSet = new Set();
+  games.forEach(g=>{ if(g.won) winDaysSet.add(g.dayNum); });
+  const winDays = [...winDaysSet].sort((a,b)=>a-b);
+
+  let maxStreak = 0, run = 0, prev = null;
+  winDays.forEach(d=>{
+    run = (prev !== null && d === prev+1) ? run+1 : 1;
+    maxStreak = Math.max(maxStreak, run);
+    prev = d;
+  });
+
+  const tm = realTodayStr().match(/^(\d+)-(\d+)-(\d+)$/);
+  const todayNum = Math.floor(Date.UTC(+tm[1], +tm[2]-1, +tm[3], 12) / 86400000);
+  let currentStreak = 0;
+  let checkDay = winDaysSet.has(todayNum) ? todayNum : todayNum - 1;
+  while(winDaysSet.has(checkDay)){ currentStreak++; checkDay--; }
+
+  return { played, wins, winPct, dist, currentStreak, maxStreak };
+}
+
+function renderStatsModal(){
+  const s = computeStatsSummary();
+  const maxDist = Math.max(s.dist[1], s.dist[2], s.dist[3], s.dist[4], s.dist[5], 1);
+  const distRows = [1,2,3,4,5].map(n=>{
+    const count = s.dist[n];
+    const pct = Math.max(Math.round((count/maxDist)*100), count>0 ? 4 : 0);
+    return '<div class="histogram-row"><div class="histogram-row-label">'+n+'</div>'+
+      '<div class="histogram-row-track"><div class="histogram-row-fill" style="width:'+pct+'%"></div></div>'+
+      '<div class="histogram-row-count">'+count+'</div></div>';
+  }).join("");
+
+  document.getElementById("statsContent").innerHTML =
+    '<div class="stats-grid">'+
+      '<div class="stats-tile"><div class="num">'+s.played+'</div><div class="lbl">Played</div></div>'+
+      '<div class="stats-tile"><div class="num">'+s.winPct+'%</div><div class="lbl">Win Rate</div></div>'+
+      '<div class="stats-tile"><div class="num">'+s.currentStreak+'</div><div class="lbl">Current Streak</div></div>'+
+      '<div class="stats-tile"><div class="num">'+s.maxStreak+'</div><div class="lbl">Max Streak</div></div>'+
+    '</div>'+
+    '<p class="stats-section-title">Guess Distribution (Wins Only)</p>'+
+    '<div class="histogram-bars">'+distRows+'</div>';
+}
+
+// ===== Past Puzzles =====
+// The actual date this project went live — nothing meaningful exists before this.
+const EARLIEST_PUZZLE_DATE = "2026-07-09";
+
+document.getElementById("pastPuzzlesBtn").addEventListener("click", ()=>{
+  const dateInput = document.getElementById("pastPuzzleDate");
+  dateInput.min = EARLIEST_PUZZLE_DATE;
+  dateInput.max = easternDateStrNDaysAgo(0); // today
+  if(!dateInput.value){
+    const defaultDate = easternDateStrNDaysAgo(1); // yesterday, as a reasonable default entry point
+    dateInput.value = defaultDate < EARLIEST_PUZZLE_DATE ? EARLIEST_PUZZLE_DATE : defaultDate;
+  }
+  document.getElementById("pastPuzzlesOverlay").classList.remove("hidden");
+});
+document.getElementById("pastPuzzlesClose").addEventListener("click", ()=>{
+  document.getElementById("pastPuzzlesOverlay").classList.add("hidden");
+});
+document.getElementById("pastPuzzlesOverlay").addEventListener("click", (e)=>{
+  if(e.target.id === "pastPuzzlesOverlay") document.getElementById("pastPuzzlesOverlay").classList.add("hidden");
+});
+document.getElementById("pastPuzzlePlayBtn").addEventListener("click", ()=>{
+  const raw = document.getElementById("pastPuzzleDate").value; // "YYYY-MM-DD"
+  if(!raw) return;
+  if(raw < EARLIEST_PUZZLE_DATE){
+    alert("Fairway Five didn't exist before " + EARLIEST_PUZZLE_DATE + " — pick a later date.");
+    return;
+  }
+  const [y,m,d] = raw.split("-").map(Number);
+  // Reject future dates (relative to the real current date, not any override)
+  const realParts = realTodayStr().split("-").map(Number);
+  const chosenNum = Date.UTC(y, m-1, d);
+  const realNum = Date.UTC(realParts[0], realParts[1]-1, realParts[2]);
+  if(chosenNum > realNum){
+    alert("Pick a date that's today or earlier.");
+    return;
+  }
+  dateOverride = `${y}-${m}-${d}`; // match the game's internal no-zero-padding format
+  currentDivision = document.getElementById("pastPuzzleDiv").value;
+  currentDifficulty = document.getElementById("pastPuzzleDifficulty").value;
+  document.querySelectorAll(".diff-btn").forEach(b=>b.classList.toggle("active", b.dataset.difficulty === currentDifficulty));
+  document.body.classList.toggle("easy-theme", currentDifficulty === "easy");
+  document.getElementById("pastPuzzlesOverlay").classList.add("hidden");
+  startGame(currentDivision);
+});
+
 function backToMenu(){
+  dateOverride = null;
   document.getElementById("gameScreen").classList.add("hidden");
   document.getElementById("pickScreen").classList.remove("hidden");
   updateMenuStatusBadges();
@@ -1036,7 +1323,8 @@ function startGame(div){
     inDivision(p) && (currentDifficulty !== "easy" || standingNumber(p) <= EASY_MODE_LIMIT)
   );
   answer = getLockedDailyAnswer(div, currentDifficulty);
-  beginRound(div + (currentDifficulty === "easy" ? " · Easy" : ""));
+  const pastLabel = dateOverride ? (" · Past Puzzle (" + dateOverride + ")") : "";
+  beginRound(div + (currentDifficulty === "easy" ? " · Easy" : "") + pastLabel);
 
   // Restore any progress already made on today's puzzle for this division —
   // this is what stops "back to menu, pick the same division again" from
@@ -1056,6 +1344,31 @@ function startDebugGame(){
   answer = complete[Math.floor(Math.random()*complete.length)];
   currentDivision = "DEBUG";
   beginRound("DEBUG · " + answer.div);
+}
+
+// QA tool: shows every hint type at once (not just the normal 4-of-8), for a
+// genuinely random player — including incomplete ones — so missing/broken
+// data is easy to spot rather than hidden by only sampling "eligible" players.
+function startDebugAllHintsGame(){
+  pool = PLAYERS.slice();
+  answer = PLAYERS[Math.floor(Math.random()*PLAYERS.length)];
+  currentDivision = "DEBUG";
+  beginRound("DEBUG · ALL HINTS · " + answer.div);
+  renderAllHintsDebug();
+}
+
+function renderAllHintsDebug(){
+  const hintList = document.getElementById("hintList");
+  hintList.innerHTML = "";
+  HINT_DEFS.forEach(h=>{
+    const v = h.value(answer);
+    const missing = (v === null || v === undefined || v === "");
+    const card = document.createElement("div");
+    card.className = "hint-card";
+    card.innerHTML = "<span class='hint-label'>" + h.label + "</span>" +
+      (missing ? '<span style="color:#c0392b;font-weight:700;">⚠️ MISSING / NULL</span>' : v);
+    hintList.appendChild(card);
+  });
 }
 
 function seededShuffle(array, seed){
@@ -1293,7 +1606,7 @@ function endGame(won){
   document.getElementById("shareBtn").onclick = ()=>{
     const grid = Array.from({length:MAX_GUESSES}, (_,i)=>{
       const b = document.getElementById("stroke-"+(i+1));
-      if(b.classList.contains("hit")) return "🟢";
+      if(b.classList.contains("hit")) return colorblindMode ? "🟦" : "🟢";
       if(b.classList.contains("miss")) return "🟠";
       return "⬜";
     }).join("");

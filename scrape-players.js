@@ -199,6 +199,15 @@ async function getPdgaProfile(pdgaNumber, year = 2026) {
   const ratingMatch = bodyText.match(/Current Rating:\s*(\d{3,4})/);
   if (ratingMatch) rating = parseInt(ratingMatch[1], 10);
 
+  // "Member Since: 2015" is a plain-text label on PDGA profile pages,
+  // confirmed via a live fetch. This replaces any attempt to *guess* tenure
+  // from the PDGA number itself — those numbers are issued in batches
+  // rather than strictly incrementally over time, so deriving a join year
+  // from the number would be unreliable. This is the actual, correct value.
+  let memberSince = null;
+  const memberMatch = bodyText.match(/Member Since:\s*(\d{4})/);
+  if (memberMatch) memberSince = parseInt(memberMatch[1], 10);
+
   // PDGA player photos live at a stable, predictable path
   // (/files/styles/large/public/pictures/picture-...jpg) regardless of
   // surrounding markup/class names, so match on that rather than a
@@ -209,25 +218,34 @@ async function getPdgaProfile(pdgaNumber, year = 2026) {
   if (photoImg) photo = photoImg.startsWith('http') ? photoImg : `https://www.pdga.com${photoImg}`;
 
   // Walk the results table(s); collect rows whose Tier column is M or ES,
-  // track the best (lowest) Place, and remember every tournament tied at
-  // that place — not just the first one encountered.
+  // track the best (lowest) Place, remember every tournament tied at that
+  // place, and also count/average across just those M/ES rows for the
+  // eventsPlayed and avgFinish hints — deliberately excluding lower-tier
+  // (A/B/C/XC) events so these hints reflect Major/Elite Series-level
+  // competition specifically, same scope as majorFinish.
   let bestPlace = null;
   let bestTourneys = [];
+  let eventsPlayed = 0;
+  let placeSum = 0;
   $('table tr').each((i, el) => {
     const cells = $(el).find('td');
     if (cells.length < 5) return;
     const place = parseInt($(cells[0]).text().trim(), 10);
     const tier = $(cells[3]).text().trim(); // column order: Place, Points, Tournament, Tier, Dates, Prize
     const tourney = $(cells[2]).text().trim();
-    if ((tier === 'M' || tier === 'ES') && !isNaN(place)) {
-      if (bestPlace === null || place < bestPlace) {
-        bestPlace = place;
-        bestTourneys = [{ tourney, tier }];
-      } else if (place === bestPlace) {
-        bestTourneys.push({ tourney, tier });
-      }
+    if (isNaN(place) || (tier !== 'M' && tier !== 'ES')) return;
+
+    eventsPlayed++;
+    placeSum += place;
+
+    if (bestPlace === null || place < bestPlace) {
+      bestPlace = place;
+      bestTourneys = [{ tourney, tier }];
+    } else if (place === bestPlace) {
+      bestTourneys.push({ tourney, tier });
     }
   });
+  const avgFinish = eventsPlayed > 0 ? Math.round((placeSum / eventsPlayed) * 10) / 10 : null;
 
   // Fail loudly rather than silently returning nulls — a page that fetched
   // fine (200 OK) but didn't yield a hometown or rating almost certainly
@@ -243,7 +261,7 @@ async function getPdgaProfile(pdgaNumber, year = 2026) {
     ? `${ordinal(bestPlace)}, ${bestTourneys.map(t => `${t.tourney} (${t.tier})`).join(' & ')}`
     : 'No M/ES finish yet this year';
 
-  return { hometown, rating, majorFinish, photo };
+  return { hometown, rating, majorFinish, photo, eventsPlayed, avgFinish, memberSince };
 }
 
 function ordinal(n) {
@@ -278,8 +296,8 @@ async function buildDivision(division, existingByPdga) {
       // Fall back to whatever we already had rather than dropping the player
       // or crashing the whole run over one flaky request.
       profile = old
-        ? { hometown: old.hometown, rating: old.rating, majorFinish: old.majorFinish, photo: old.photo }
-        : { hometown: null, rating: null, majorFinish: null, photo: null };
+        ? { hometown: old.hometown, rating: old.rating, majorFinish: old.majorFinish, photo: old.photo, eventsPlayed: old.eventsPlayed, avgFinish: old.avgFinish, memberSince: old.memberSince }
+        : { hometown: null, rating: null, majorFinish: null, photo: null, eventsPlayed: null, avgFinish: null };
     }
 
     players.push({
@@ -292,6 +310,9 @@ async function buildDivision(division, existingByPdga) {
       majorFinish: profile.majorFinish,
       standing: ordinal(s.rank),
       photo: profile.photo ?? (existingByPdga.get(pdgaNumber)?.photo ?? null),
+      eventsPlayed: profile.eventsPlayed ?? (existingByPdga.get(pdgaNumber)?.eventsPlayed ?? null),
+      avgFinish: profile.avgFinish ?? (existingByPdga.get(pdgaNumber)?.avgFinish ?? null),
+      memberSince: profile.memberSince ?? (existingByPdga.get(pdgaNumber)?.memberSince ?? null),
     });
     // Be polite — a real delay with jitter between requests, since GitHub
     // Actions IPs get rate-limited much faster than a normal browsing pace.
@@ -400,7 +421,7 @@ async function refreshPartial(existingPlayers) {
   for (const p of existingPlayers) {
     try {
       const profile = await getPdgaProfile(p.pdga);
-      updated.push({ ...p, rating: profile.rating, majorFinish: profile.majorFinish, photo: profile.photo ?? p.photo });
+      updated.push({ ...p, rating: profile.rating, majorFinish: profile.majorFinish, photo: profile.photo ?? p.photo, eventsPlayed: profile.eventsPlayed ?? p.eventsPlayed, avgFinish: profile.avgFinish ?? p.avgFinish, memberSince: profile.memberSince ?? p.memberSince });
     } catch (err) {
       console.error(`Failed to refresh ${p.name} (#${p.pdga}): ${err.message}`);
       updated.push(p); // keep old values rather than dropping the player
