@@ -303,6 +303,63 @@
     font-weight:700;
     color:var(--orange-dim);
   }
+  .histogram{
+    margin:16px 0 4px;
+    text-align:left;
+  }
+  .histogram-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--miss);
+    text-align:center;
+    margin:0 0 8px;
+  }
+  .histogram-bars{
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+  }
+  .histogram-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .histogram-row-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    font-weight:700;
+    width:16px;
+    flex-shrink:0;
+    text-align:center;
+    color:var(--ink);
+  }
+  .histogram-row-track{
+    flex:1;
+    background:var(--cream-dim);
+    border-radius:4px;
+    height:20px;
+    overflow:hidden;
+    position:relative;
+  }
+  .histogram-row-fill{
+    height:100%;
+    background:var(--green-mid);
+    border-radius:4px;
+    min-width:2px;
+    transition:width .5s ease, background .4s ease;
+  }
+  .histogram-row.is-you .histogram-row-fill{ background:var(--orange); }
+  .histogram-row.is-you .histogram-row-label{ color:var(--orange-dim); }
+  .histogram-row-count{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    width:24px;
+    flex-shrink:0;
+    text-align:right;
+    color:var(--miss);
+  }
   .result-actions{
     display:flex;
     gap:10px;
@@ -549,6 +606,10 @@
       <h2 id="resultTitle"></h2>
       <div class="score" id="resultScore"></div>
       <p id="resultName" style="margin:4px 0 0;"></p>
+      <div class="histogram hidden" id="histogram">
+        <p class="histogram-label">How everyone did today</p>
+        <div class="histogram-bars" id="histogramBars"></div>
+      </div>
       <div class="result-actions">
         <button class="share-btn" id="shareBtn">Copy Result</button>
         <button class="menu-btn" id="backToMenuBtn">Back to Menu</button>
@@ -813,7 +874,7 @@ function seedVersionFor(div){
   return SEED_VERSION_OVERRIDES[div] ?? SEED_VERSION;
 }
 
-function getDailyAnswer(div, difficulty){
+function computeDailyAnswer(div, difficulty){
   const answerPool = PLAYERS.filter(p=>
     (div === "MIX" || p.div === div) &&
     isEligibleAnswer(p) &&
@@ -825,14 +886,43 @@ function getDailyAnswer(div, difficulty){
 
   let candidates = answerPool;
   if(div === "MIX"){
-    // Make sure MIX never coincides with whichever player MPO or FPO landed on today.
-    const mpoAnswer = getDailyAnswer("MPO", difficulty);
-    const fpoAnswer = getDailyAnswer("FPO", difficulty);
+    // Make sure MIX never coincides with whichever player MPO or FPO landed
+    // on today — check against the actual LOCKED answers (not a fresh
+    // recompute), so this stays consistent with what's really pinned for today.
+    const mpoAnswer = getLockedDailyAnswer("MPO", difficulty);
+    const fpoAnswer = getLockedDailyAnswer("FPO", difficulty);
     const excluded = new Set([mpoAnswer && mpoAnswer.name, fpoAnswer && fpoAnswer.name]);
     const filtered = answerPool.filter(p=>!excluded.has(p.name));
     if(filtered.length > 0) candidates = filtered;
   }
   return candidates[Math.floor(rand()*candidates.length)];
+}
+
+function lockedAnswerKey(div, difficulty){
+  return "fairwayfive_lockedanswer_" + todayStr() + "_" + div + "_" + difficulty;
+}
+
+// Pins today's answer the first time it's needed, and reuses that exact
+// player on every subsequent call — even if players.json changes underneath
+// later that same day (new data landing, standings shifting the eligible
+// pool, etc). Without this, a mid-day data refresh could silently swap out
+// today's puzzle out from under someone already playing it.
+function getLockedDailyAnswer(div, difficulty){
+  let lockedName = null;
+  try{ lockedName = localStorage.getItem(lockedAnswerKey(div, difficulty)); } catch(e){ /* ignore */ }
+
+  if(lockedName){
+    const found = PLAYERS.find(p => p.name === lockedName);
+    if(found) return found; // still exists in current data — reuse it as-is
+    // The locked player vanished from the pool entirely (rare) — fall through
+    // and lock in a fresh one instead.
+  }
+
+  const fresh = computeDailyAnswer(div, difficulty);
+  if(fresh){
+    try{ localStorage.setItem(lockedAnswerKey(div, difficulty), fresh.name); } catch(e){ /* ignore */ }
+  }
+  return fresh;
 }
 
 function storageKey(div, difficulty){
@@ -843,15 +933,50 @@ function saveProgress(){
   if(currentDivision === "DEBUG") return; // debug rounds are never persisted
   const lastGuess = guessHistory[guessHistory.length-1];
   const won = gameOver && lastGuess && answer && lastGuess.toLowerCase() === answer.name.toLowerCase();
+
+  let alreadyRecorded = false;
+  try{
+    const existingRaw = localStorage.getItem(storageKey(currentDivision, currentDifficulty));
+    if(existingRaw){
+      alreadyRecorded = !!JSON.parse(existingRaw).resultRecorded;
+    }
+  } catch(e){ /* ignore */ }
+  const shouldRecordNow = gameOver && !alreadyRecorded;
+
   try{
     localStorage.setItem(storageKey(currentDivision, currentDifficulty), JSON.stringify({
       answer: answer.name,
       guesses: guessHistory,
       gameOver,
       won,
+      resultRecorded: alreadyRecorded || shouldRecordNow,
     }));
   } catch(e){ /* localStorage unavailable (private browsing etc.) — fail silently */ }
+
+  if(shouldRecordNow){
+    recordGlobalResult(won);
+  }
+
   updateMenuStatusBadges();
+}
+
+// Fire-and-forget: global stats are a nice-to-have, never something that
+// should block or break actual gameplay if the network hiccups or the
+// backend isn't set up yet.
+function recordGlobalResult(won){
+  try{
+    fetch("/api/record-result", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        date: todayStr(),
+        div: currentDivision,
+        difficulty: currentDifficulty,
+        guessCount: guessCount,
+        won: won,
+      }),
+    }).catch(()=>{});
+  } catch(e){ /* ignore */ }
 }
 
 function updateMenuStatusBadges(){
@@ -860,7 +985,7 @@ function updateMenuStatusBadges(){
     if(!badge) return;
 
     let todaysAnswer;
-    try{ todaysAnswer = getDailyAnswer(div, currentDifficulty); } catch(e){ todaysAnswer = null; }
+    try{ todaysAnswer = getLockedDailyAnswer(div, currentDifficulty); } catch(e){ todaysAnswer = null; }
 
     const saved = loadProgress(div, currentDifficulty);
     badge.className = "status-badge";
@@ -897,7 +1022,7 @@ function startGame(div){
   pool = PLAYERS.filter(p=>
     inDivision(p) && (currentDifficulty !== "easy" || standingNumber(p) <= EASY_MODE_LIMIT)
   );
-  answer = getDailyAnswer(div, currentDifficulty);
+  answer = getLockedDailyAnswer(div, currentDifficulty);
   beginRound(div + (currentDifficulty === "easy" ? " · Easy" : ""));
 
   // Restore any progress already made on today's puzzle for this division —
@@ -1167,6 +1292,53 @@ function endGame(won){
       setTimeout(()=>{ document.getElementById("shareBtn").textContent = "Copy Result"; }, 1500);
     });
   };
+
+  loadAndRenderHistogram(won);
+}
+
+function loadAndRenderHistogram(won){
+  const container = document.getElementById("histogram");
+  if(currentDivision === "DEBUG"){
+    container.classList.add("hidden");
+    return;
+  }
+  const params = new URLSearchParams({
+    date: todayStr(),
+    div: currentDivision,
+    difficulty: currentDifficulty,
+  });
+  fetch("/api/get-stats?" + params.toString())
+    .then(r => r.ok ? r.json() : null)
+    .then(data => {
+      if(!data || !data.counts){ container.classList.add("hidden"); return; }
+      renderHistogram(data.counts, won ? String(guessCount) : "X");
+    })
+    .catch(()=>{ container.classList.add("hidden"); });
+}
+
+function renderHistogram(counts, yourBucket){
+  const container = document.getElementById("histogram");
+  const bars = document.getElementById("histogramBars");
+  const buckets = ["1","2","3","4","5","X"];
+  const total = buckets.reduce((sum,b)=> sum + (counts[b]||0), 0);
+  if(total === 0){
+    container.classList.add("hidden");
+    return;
+  }
+  const maxCount = Math.max(...buckets.map(b=>counts[b]||0), 1);
+  bars.innerHTML = "";
+  buckets.forEach(b=>{
+    const count = counts[b] || 0;
+    const pct = Math.max(Math.round((count / maxCount) * 100), count > 0 ? 4 : 0);
+    const row = document.createElement("div");
+    row.className = "histogram-row" + (b === yourBucket ? " is-you" : "");
+    row.innerHTML =
+      '<div class="histogram-row-label">'+b+'</div>' +
+      '<div class="histogram-row-track"><div class="histogram-row-fill" style="width:'+pct+'%"></div></div>' +
+      '<div class="histogram-row-count">'+count+'</div>';
+    bars.appendChild(row);
+  });
+  container.classList.remove("hidden");
 }
 </script>
 </body>
