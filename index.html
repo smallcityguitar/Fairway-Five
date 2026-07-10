@@ -648,7 +648,7 @@
         <li>Average Major/Elite Series finish this season</li>
         <li>PDGA member since (actual join year)</li>
       </ul>
-      <p class="modal-body">There are 8 possible hints but only 4 ever get revealed — one per wrong guess on strokes 1–4, randomly chosen each day. Your 5th guess, if you need it, is your last shot with no new hint attached.</p>
+      <p class="modal-body">There are 8 possible hints. You get one for free right away, before your first guess, so you're not starting completely blind — in Normal mode that starter hint will never be Hometown, Best Major/Elite Series Finish, or Current Pro Tour Standing (those are fair game later, just not as the free opener). Four more get revealed one at a time on wrong guesses 1–4. Your 5th guess, if you need it, is your last shot with no new hint attached.</p>
 
       <p class="modal-body"><strong>Example round:</strong></p>
       <div class="modal-example">
@@ -731,8 +731,21 @@
 
   <p class="footnote">
     Only the current top 40 MPO and top 40 FPO Tour standings are included. Stats update regularly throughout the season.<br><br>
-    Fairway Five is an unofficial fan project and is not affiliated with, endorsed by, or sponsored by the PDGA or the DGPT.
+    Fairway Five is an unofficial fan project and is not affiliated with, endorsed by, or sponsored by the PDGA or the DGPT.<br><br>
+    <a href="#" id="privacyLink" style="color:inherit;text-decoration:underline;">Privacy — what's stored/shared</a>
   </p>
+</div>
+
+<div class="modal-overlay hidden" id="privacyOverlay">
+  <div class="modal-card">
+    <button class="modal-close" id="privacyClose">✕</button>
+    <h2 class="modal-title">What's Stored & Shared</h2>
+    <p class="modal-body"><strong>On your device only (never sent anywhere):</strong> which player you're guessing each day, your guesses, win/loss history, personal stats and streaks, and your colorblind-mode preference. This all lives in your browser's own storage — not tied to your name, not sent to me, and gone if you clear your browser data. There are no accounts or sign-ins.</p>
+    <p class="modal-body"><strong>Shared anonymously, for the "how everyone did" histogram:</strong> when you finish a puzzle, this app sends the date, division/difficulty, and whether you won (and in how many guesses) — no name, no device ID, nothing that identifies you. It's added to a simple running count (e.g. "14 people finished in 3 guesses today"). There's no record of who specifically got what.</p>
+    <p class="modal-body"><strong>What I (the developer) can see:</strong> only those same anonymous aggregate counts — never which specific player you were guessing, and never anything tied to you personally.</p>
+    <p class="modal-body"><strong>Third-party bits:</strong> this page loads fonts from Google Fonts, which is standard practice but does mean Google's servers see a request when the page loads, same as most websites. Hosting (Vercel) may also keep basic technical logs like IP addresses briefly for security/operational purposes — that's just how web hosting works generally, not something this app adds on top.</p>
+    <p class="modal-body">No ads, no ad trackers, no analytics beyond what's described above.</p>
+  </div>
 </div>
 
 <script>
@@ -838,7 +851,10 @@ const HINT_DEFS = [
   {key:"memberSince", label:"PDGA Member Since", value:p=> p.memberSince != null ? String(p.memberSince) : null},
 ];
 
-const MIN_HINTS_REQUIRED = 4;
+// 5, not 4: one starter hint shown immediately, plus up to 4 more revealed
+// on wrong guesses 1-4 — the starter is additive, not a reallocation of an
+// existing hint, so eligible answers need one more available hint than before.
+const MIN_HINTS_REQUIRED = 5;
 
 function availableHintCount(p){
   return HINT_DEFS.filter(h => {
@@ -1006,6 +1022,18 @@ document.getElementById("howToPlayOverlay").addEventListener("click", (e)=>{
   if(e.target.id === "howToPlayOverlay"){
     document.getElementById("howToPlayOverlay").classList.add("hidden");
   }
+});
+
+// ===== Privacy =====
+document.getElementById("privacyLink").addEventListener("click", (e)=>{
+  e.preventDefault();
+  document.getElementById("privacyOverlay").classList.remove("hidden");
+});
+document.getElementById("privacyClose").addEventListener("click", ()=>{
+  document.getElementById("privacyOverlay").classList.add("hidden");
+});
+document.getElementById("privacyOverlay").addEventListener("click", (e)=>{
+  if(e.target.id === "privacyOverlay") document.getElementById("privacyOverlay").classList.add("hidden");
 });
 
 // ===== My Stats =====
@@ -1381,18 +1409,41 @@ function seededShuffle(array, seed){
   return arr;
 }
 
+// The three most identifying hints — excluded from being the STARTER hint
+// in Normal mode specifically (they can still show up later via a wrong
+// guess). Easy mode has no such restriction.
+const STARTER_EXCLUDED_IN_NORMAL = ["hometown", "majorFinish", "standing"];
+
 function beginRound(label){
   guessCount = 0;
   usedHints = [];
   guessHistory = [];
   gameOver = false;
 
-  const hintSeed = dateSeed(todayStr() + "-" + answer.name + "-hints-v" + SEED_VERSION);
   const availableHints = HINT_DEFS.filter(h => {
     const v = h.value(answer);
     return v !== null && v !== undefined;
   });
-  hintOrder = seededShuffle(availableHints, hintSeed);
+
+  // Pick a starter hint — shown immediately, before any guesses, so the
+  // player isn't starting completely blind.
+  let starterCandidates = availableHints;
+  if(currentDifficulty !== "easy"){
+    const filtered = availableHints.filter(h => !STARTER_EXCLUDED_IN_NORMAL.includes(h.key));
+    // Only actually apply the restriction if it leaves at least one
+    // candidate — falls back to the full list rather than crashing on a
+    // player with very sparse data.
+    if(filtered.length > 0) starterCandidates = filtered;
+  }
+  const starterSeed = dateSeed(todayStr() + "-" + answer.name + "-starter-v" + SEED_VERSION);
+  const starterRand = seededRandom(starterSeed);
+  const starterHint = starterCandidates[Math.floor(starterRand() * starterCandidates.length)];
+
+  // The starter hint comes out of the same pool used for the wrong-guess
+  // reveals, so it's excluded there to avoid showing the same hint twice.
+  const remainingHints = availableHints.filter(h => h.key !== starterHint.key);
+  const hintSeed = dateSeed(todayStr() + "-" + answer.name + "-hints-v" + SEED_VERSION);
+  hintOrder = seededShuffle(remainingHints, hintSeed);
 
   document.getElementById("pickScreen").classList.add("hidden");
   document.getElementById("gameScreen").classList.remove("hidden");
@@ -1405,6 +1456,11 @@ function beginRound(label){
 
   buildStrokeTracker();
   updateFlightPath();
+
+  const starterCard = document.createElement("div");
+  starterCard.className = "hint-card";
+  starterCard.innerHTML = "<span class='hint-label'>" + starterHint.label + "</span>" + starterHint.value(answer);
+  document.getElementById("hintList").appendChild(starterCard);
 }
 
 function buildStrokeTracker(){
