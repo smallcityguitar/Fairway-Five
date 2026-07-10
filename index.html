@@ -53,13 +53,18 @@
     --green-mid:#1c5480;
     --bg-highlight:#1f4c68;
   }
-  /* Colorblind-friendly mode swaps the green "hit"/"others" signal color for
-     blue — blue+orange is the standard safe pairing for the common forms of
-     red-green colorblindness, where green and orange can otherwise read as
-     similar. Orange stays orange throughout; only green-coded elements change. */
-  body.colorblind-mode .stroke-box.hit{ background:#2f6690; border-color:#2f6690; }
-  body.colorblind-mode .histogram-row-fill{ background:#2f6690; }
-  body.colorblind-mode .disc-btn .disc-icon::after{ background:#2f6690; }
+  /* Colorblind-friendly mode overrides the same core variables Easy mode
+     uses — swapping green for blue app-wide (background, buttons, stroke
+     boxes, histogram bars, everything) rather than just a few isolated
+     elements. Blue+orange is the standard safe pairing for the common forms
+     of red-green colorblindness, where green and orange can otherwise read
+     as too similar. Orange stays orange throughout; uses the same blue as
+     Easy mode so the two combine without any visual inconsistency. */
+  body.colorblind-mode{
+    --green-deep:#122b40;
+    --green-mid:#1c5480;
+    --bg-highlight:#1f4c68;
+  }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
