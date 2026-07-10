@@ -954,7 +954,9 @@ function saveProgress(){
   } catch(e){ /* localStorage unavailable (private browsing etc.) — fail silently */ }
 
   if(shouldRecordNow){
-    recordGlobalResult(won);
+    recordGlobalResult(won); // renders the histogram itself once the response lands
+  } else if(gameOver && alreadyRecorded){
+    loadAndRenderHistogram(won); // reload/replay of an already-completed game
   }
 
   updateMenuStatusBadges();
@@ -962,8 +964,13 @@ function saveProgress(){
 
 // Fire-and-forget: global stats are a nice-to-have, never something that
 // should block or break actual gameplay if the network hiccups or the
-// backend isn't set up yet.
+// backend isn't set up yet. record-result returns the freshly-updated counts
+// directly in its own response (rather than us making a separate follow-up
+// GET), which avoids a race where the very first person to complete a given
+// day/division/difficulty would see the histogram fetch land before their
+// own increment did, and hide itself for showing an all-zero total.
 function recordGlobalResult(won){
+  const container = document.getElementById("histogram");
   try{
     fetch("/api/record-result", {
       method: "POST",
@@ -975,8 +982,14 @@ function recordGlobalResult(won){
         guessCount: guessCount,
         won: won,
       }),
-    }).catch(()=>{});
-  } catch(e){ /* ignore */ }
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if(data && data.counts) renderHistogram(data.counts, won ? String(guessCount) : "X");
+        else if(container) container.classList.add("hidden");
+      })
+      .catch(()=>{ if(container) container.classList.add("hidden"); });
+  } catch(e){ if(container) container.classList.add("hidden"); }
 }
 
 function updateMenuStatusBadges(){
@@ -1292,8 +1305,6 @@ function endGame(won){
       setTimeout(()=>{ document.getElementById("shareBtn").textContent = "Copy Result"; }, 1500);
     });
   };
-
-  loadAndRenderHistogram(won);
 }
 
 function loadAndRenderHistogram(won){
