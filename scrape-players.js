@@ -347,6 +347,13 @@ const PDGA_NUMBER_LOOKUP = {
   "Holly Finley": 51277,
   "Ida Emilie Nesse": 181772,
   "Chandler Reigh": 277832,
+
+  // New entrants that rotated into the FPO top 40 after this table was
+  // originally built (standings shift week to week — add more here as needed)
+  "Julia Fors": 224238,
+  "Amanda Lennartsson": 155026,
+  "Kristýna Jurčíková": 210972,
+  "Matilda Ringbom": 77385,
 };
 
 async function refreshPartial(existingPlayers) {
