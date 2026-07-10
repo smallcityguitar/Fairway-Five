@@ -21,6 +21,21 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
+  @property --green-deep {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #16302A;
+  }
+  @property --green-mid {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #1E4238;
+  }
+  @property --bg-highlight {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #234a3f;
+  }
   :root{
     --green-deep:#16302A;
     --green-mid:#1E4238;
@@ -51,7 +66,7 @@
     align-items:center;
     justify-content:center;
     padding:24px 16px 60px;
-    transition:background .6s ease;
+    transition:background .6s ease, --green-deep .6s ease, --green-mid .6s ease, --bg-highlight .6s ease;
   }
   .app{ width:100%; max-width:460px; }
 
@@ -270,6 +285,16 @@
   .result{
     text-align:center;
     padding:10px 0 4px;
+  }
+  .result-photo{
+    width:88px;
+    height:88px;
+    border-radius:50%;
+    object-fit:cover;
+    border:3px solid var(--orange);
+    margin:0 auto 12px;
+    display:block;
+    background:var(--cream-dim);
   }
   .result h2{ margin:0 0 4px; text-transform:uppercase; }
   .result .score{
@@ -520,6 +545,7 @@
     <div class="hints" id="hintList"></div>
 
     <div class="result hidden" id="resultBlock">
+      <img class="result-photo hidden" id="resultPhoto" alt="">
       <h2 id="resultTitle"></h2>
       <div class="score" id="resultScore"></div>
       <p id="resultName" style="margin:4px 0 0;"></p>
@@ -1107,6 +1133,17 @@ function endGame(won){
   const title = document.getElementById("resultTitle");
   const score = document.getElementById("resultScore");
   const nameEl = document.getElementById("resultName");
+  const photoEl = document.getElementById("resultPhoto");
+
+  if(answer.photo){
+    photoEl.onerror = () => photoEl.classList.add("hidden");
+    photoEl.src = answer.photo;
+    photoEl.alt = answer.name;
+    photoEl.classList.remove("hidden");
+  } else {
+    photoEl.classList.add("hidden");
+    photoEl.removeAttribute("src");
+  }
 
   title.textContent = resultLabel;
   score.textContent = (won ? guessCount : "X") + " / " + MAX_GUESSES;

@@ -178,8 +178,12 @@ async function getStandings(division) {
     const pdga = parseInt($(el).attr('data-pdgaid'), 10);
     const rank = parseInt($(el).find('.DGPTStandings--table_rank span').first().text().trim(), 10);
     const name = $(el).find('.DGPTStandings--table_name span').first().text().trim();
+    const imgSrc = $(el).find('.DGPTStandings--table_headshot img').first().attr('src') || null;
+    // DGPT falls back to a generic silhouette for players without a real
+    // photo on file — treat that as "no photo" rather than a real headshot.
+    const photo = (imgSrc && !imgSrc.includes('GENERIC PROFILE')) ? imgSrc : null;
     if (pdga && name && !isNaN(rank)) {
-      rows.push({ rank, name, pdga });
+      rows.push({ rank, name, pdga, photo });
     }
   });
 
@@ -304,6 +308,7 @@ async function buildDivision(division, existingByPdga) {
       c1x: c1xMap.get(s.name) ?? (existingByPdga.get(pdgaNumber)?.c1x ?? null),
       majorFinish: profile.majorFinish,
       standing: ordinal(s.rank),
+      photo: s.photo ?? (existingByPdga.get(pdgaNumber)?.photo ?? null),
     });
     // Be polite — a real delay with jitter between requests, since GitHub
     // Actions IPs get rate-limited much faster than a normal browsing pace.
