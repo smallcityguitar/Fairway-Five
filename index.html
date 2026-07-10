@@ -53,17 +53,20 @@
     --green-mid:#1c5480;
     --bg-highlight:#1f4c68;
   }
-  /* Colorblind-friendly mode overrides the same core variables Easy mode
-     uses — swapping green for blue app-wide (background, buttons, stroke
-     boxes, histogram bars, everything) rather than just a few isolated
-     elements. Blue+orange is the standard safe pairing for the common forms
-     of red-green colorblindness, where green and orange can otherwise read
-     as too similar. Orange stays orange throughout; uses the same blue as
-     Easy mode so the two combine without any visual inconsistency. */
-  body.colorblind-mode{
-    --green-deep:#122b40;
-    --green-mid:#1c5480;
-    --bg-highlight:#1f4c68;
+  /* Colorblind-friendly mode swaps green for purple in Normal mode — but
+     only in Normal mode. Easy mode's blue was already colorblind-safe, so
+     it's untouched here; the :not(.easy-theme) guard is what keeps Normal
+     and Easy visually distinct from each other while colorblind mode is on,
+     the same way green vs blue are distinct when it's off. Without that
+     guard, both difficulties would collapse to the same purple, and the
+     difficulty toggle would stop conveying anything visually. Purple reads
+     clearly distinct from orange for the common red-green forms of
+     colorblindness — enough blue in it to stay on the same "safe" side as
+     blue+orange, unlike green+orange, which is the pairing this exists to avoid. */
+  body.colorblind-mode:not(.easy-theme){
+    --green-deep:#2b1a45;
+    --green-mid:#6a4c93;
+    --bg-highlight:#4a2f66;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
