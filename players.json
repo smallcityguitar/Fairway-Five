@@ -8,7 +8,10 @@
     "c1x": 90.36,
     "majorFinish": "1st, DGPT - MVP Big Easy Open presented by Flight Factory (ES) & DGPT - Queen City Classic presented by Another Round (ES) & DGPT - Play it Again Sports Jonesboro Open presented by Westside Discs (ES) & DGPT+ Northwest Championship Presented by Latitude 64° (ES) & 2026 PDGA European Open (M)",
     "standing": "1st",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1154441-1712290699.jpg?itok=0xVXqjgX"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1154441-1712290699.jpg?itok=0xVXqjgX",
+    "eventsPlayed": 12,
+    "avgFinish": 3.1,
+    "memberSince": 2015
   },
   {
     "name": "Richard Wysocki",
@@ -19,7 +22,10 @@
     "c1x": 88.04,
     "majorFinish": "1st, DGPT - Discraft’s Supreme Flight Open Presented by Florida’s Adventure Coast (ES) & DGPT - Ale Open presented by Discraft (ES)",
     "standing": "2nd",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-3488-1773458098.jpg?itok=RIem1pIE"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-3488-1773458098.jpg?itok=RIem1pIE",
+    "eventsPlayed": 12,
+    "avgFinish": 9.6,
+    "memberSince": 2009
   },
   {
     "name": "Calvin Heimburg",
@@ -30,7 +36,10 @@
     "c1x": 87.59,
     "majorFinish": "1st, DGPT+ / WGE - OTB Open by MVP Disc Sports (ES)",
     "standing": "3rd",
-    "photo": null
+    "photo": null,
+    "eventsPlayed": 12,
+    "avgFinish": 9.5,
+    "memberSince": 2010
   },
   {
     "name": "Isaac Robinson",
@@ -41,7 +50,10 @@
     "c1x": 88.21,
     "majorFinish": "2nd, DGPT - Play it Again Sports Jonesboro Open presented by Westside Discs (ES) & DGPT+ Northwest Championship Presented by Latitude 64° (ES)",
     "standing": "4th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-224426-1776862710.jpg?itok=hcGde93c"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-224426-1776862710.jpg?itok=hcGde93c",
+    "eventsPlayed": 12,
+    "avgFinish": 12,
+    "memberSince": 2011
   },
   {
     "name": "Adam Hammes",
@@ -52,7 +64,10 @@
     "c1x": 87.04,
     "majorFinish": "3rd, DGPT - Play it Again Sports Jonesboro Open presented by Westside Discs (ES) & DGPT+ / WGE - OTB Open by MVP Disc Sports (ES) & DGPT - Swedish Open presented by Kastaplast (ES)",
     "standing": "5th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-206671-1740849914.jpg?itok=DVHDIv7F"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-206671-1740849914.jpg?itok=DVHDIv7F",
+    "eventsPlayed": 12,
+    "avgFinish": 17,
+    "memberSince": 2013
   },
   {
     "name": "Anthony Barela",
@@ -63,7 +78,10 @@
     "c1x": 86.44,
     "majorFinish": "3rd, 2026 PDGA Champions Cup Presented by Vessi (M)",
     "standing": "6th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1072146-1770434064.jpg?itok=llAShZpj"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1072146-1770434064.jpg?itok=llAShZpj",
+    "eventsPlayed": 12,
+    "avgFinish": 16.7,
+    "memberSince": 2010
   },
   {
     "name": "Eagle McMahon",
@@ -74,7 +92,10 @@
     "c1x": 89.04,
     "majorFinish": "1st, DGPT - Swedish Open presented by Kastaplast (ES)",
     "standing": "7th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-281501-1741018530.jpg?itok=CrBf1qtz"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-281501-1741018530.jpg?itok=CrBf1qtz",
+    "eventsPlayed": 10,
+    "avgFinish": 16.2,
+    "memberSince": 2008
   },
   {
     "name": "Niklas Anttila",
@@ -85,7 +106,10 @@
     "c1x": 84.77,
     "majorFinish": "1st, 2026 PDGA Champions Cup Presented by Vessi (M)",
     "standing": "8th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-332551-1620317153.jpg?itok=03izU84N"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-332551-1620317153.jpg?itok=03izU84N",
+    "eventsPlayed": 9,
+    "avgFinish": 15.3,
+    "memberSince": 2017
   },
   {
     "name": "Sullivan Tipton",
@@ -96,7 +120,10 @@
     "c1x": 86.95,
     "majorFinish": "5th, DGPT - Discraft’s Supreme Flight Open Presented by Florida’s Adventure Coast (ES) & DGPT - Play it Again Sports Jonesboro Open presented by Westside Discs (ES) & DGPT+ Barbasol Open at Austin presented by Hampton Inn/Home2 Suites Austin East (ES)",
     "standing": "9th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-282786-1724299260.jpg?itok=E6rjX3Dg"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-282786-1724299260.jpg?itok=E6rjX3Dg",
+    "eventsPlayed": 11,
+    "avgFinish": 14.5,
+    "memberSince": 2015
   },
   {
     "name": "Gavin Babcock",
@@ -107,7 +134,10 @@
     "c1x": 86.7,
     "majorFinish": "3rd, DGPT+ / WGE - OTB Open by MVP Disc Sports (ES) & 2026 PDGA European Open (M)",
     "standing": "10th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-291186-1780986781.jpg?itok=QVvmpQAa"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-291186-1780986781.jpg?itok=QVvmpQAa",
+    "eventsPlayed": 12,
+    "avgFinish": 24.8,
+    "memberSince": 2016
   },
   {
     "name": "Luke Taylor",
@@ -118,7 +148,10 @@
     "c1x": 81.56,
     "majorFinish": "4th, DGPT - MVP Big Easy Open presented by Flight Factory (ES)",
     "standing": "11th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1995701-1774240561.jpg?itok=UUbzTM9P"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1995701-1774240561.jpg?itok=UUbzTM9P",
+    "eventsPlayed": 12,
+    "avgFinish": 19.4,
+    "memberSince": 2017
   },
   {
     "name": "Ezra Robinson",
@@ -129,7 +162,10 @@
     "c1x": 88.68,
     "majorFinish": "2nd, DGPT+ Barbasol Open at Austin presented by Hampton Inn/Home2 Suites Austin East (ES)",
     "standing": "12th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-224441-1746213643.png?itok=O63aix1X"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-224441-1746213643.png?itok=O63aix1X",
+    "eventsPlayed": 12,
+    "avgFinish": 29.8,
+    "memberSince": 2011
   },
   {
     "name": "Silas Schultz",
@@ -140,7 +176,10 @@
     "c1x": 74.94,
     "majorFinish": "4th, DGPT - Ale Open presented by Discraft (ES)",
     "standing": "13th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-285041-1769548328.jpg?itok=TyVDq1jy"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-285041-1769548328.jpg?itok=TyVDq1jy",
+    "eventsPlayed": 12,
+    "avgFinish": 31.2,
+    "memberSince": 2015
   },
   {
     "name": "Aaron Gossage",
@@ -151,7 +190,10 @@
     "c1x": 81.49,
     "majorFinish": "8th, DGPT - MVP Big Easy Open presented by Flight Factory (ES)",
     "standing": "14th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-322011-1774240472.jpg?itok=BqEbFUyR"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-322011-1774240472.jpg?itok=BqEbFUyR",
+    "eventsPlayed": 12,
+    "avgFinish": 26.6,
+    "memberSince": 2008
   },
   {
     "name": "Raven Newsom",
@@ -162,7 +204,10 @@
     "c1x": 86.36,
     "majorFinish": "2nd, DGPT - Queen City Classic presented by Another Round (ES)",
     "standing": "15th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-347861-1709476318.jpg?itok=UsOsIOkg"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-347861-1709476318.jpg?itok=UsOsIOkg",
+    "eventsPlayed": 12,
+    "avgFinish": 29.3,
+    "memberSince": 2016
   },
   {
     "name": "Casey White",
@@ -173,7 +218,10 @@
     "c1x": 88.37,
     "majorFinish": "5th, DGPT - GRIPeq 44th Kansas City Wide Open presented by Nexus Disc Golf (ES)",
     "standing": "16th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-317062-1772123702.jpg?itok=fZblloV8"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-317062-1772123702.jpg?itok=fZblloV8",
+    "eventsPlayed": 9,
+    "avgFinish": 16.8,
+    "memberSince": 2016
   },
   {
     "name": "Cole Redalen",
@@ -184,7 +232,10 @@
     "c1x": 80.23,
     "majorFinish": "1st, DGPT - GRIPeq 44th Kansas City Wide Open presented by Nexus Disc Golf (ES)",
     "standing": "17th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1081951-1777206250.jpg?itok=NMp4-oOM"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1081951-1777206250.jpg?itok=NMp4-oOM",
+    "eventsPlayed": 11,
+    "avgFinish": 32.3,
+    "memberSince": 2015
   },
   {
     "name": "Jaden Rye",
@@ -195,7 +246,10 @@
     "c1x": 85.81,
     "majorFinish": "3rd, DGPT+ Barbasol Open at Austin presented by Hampton Inn/Home2 Suites Austin East (ES)",
     "standing": "18th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1654596-1752383668.jpg?itok=UegH5NlZ"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1654596-1752383668.jpg?itok=UegH5NlZ",
+    "eventsPlayed": 11,
+    "avgFinish": 27.4,
+    "memberSince": 2020
   },
   {
     "name": "Joseph Anderson",
@@ -206,7 +260,10 @@
     "c1x": 83.3,
     "majorFinish": "5th, DGPT - MVP Big Easy Open presented by Flight Factory (ES)",
     "standing": "19th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1648431-1741982979.jpg?itok=IUfWB-Cs"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1648431-1741982979.jpg?itok=IUfWB-Cs",
+    "eventsPlayed": 11,
+    "avgFinish": 30.9,
+    "memberSince": 2019
   },
   {
     "name": "Zachary Nash",
@@ -217,7 +274,10 @@
     "c1x": 87.72,
     "majorFinish": "5th, DGPT+ / WGE - OTB Open by MVP Disc Sports (ES)",
     "standing": "20th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-2636531-1722607001.jpg?itok=ivWBehWD"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-2636531-1722607001.jpg?itok=ivWBehWD",
+    "eventsPlayed": 9,
+    "avgFinish": 24.1,
+    "memberSince": 2017
   },
   {
     "name": "Jake Monn",
@@ -228,7 +288,10 @@
     "c1x": 89.09,
     "majorFinish": "4th, DGPT - Queen City Classic presented by Another Round (ES)",
     "standing": "21st",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-508116-1774892733.jpg?itok=gpqXFaQn"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-508116-1774892733.jpg?itok=gpqXFaQn",
+    "eventsPlayed": 12,
+    "avgFinish": 37.9,
+    "memberSince": 2017
   },
   {
     "name": "Jesse Nieminen",
@@ -239,7 +302,10 @@
     "c1x": 82.82,
     "majorFinish": "5th, DGPT - GRIPeq 44th Kansas City Wide Open presented by Nexus Disc Golf (ES)",
     "standing": "22nd",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-910811-1693425623.jpg?itok=BiuD7TWZ"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-910811-1693425623.jpg?itok=BiuD7TWZ",
+    "eventsPlayed": 8,
+    "avgFinish": 20.1,
+    "memberSince": 2013
   },
   {
     "name": "Kyle Klein",
@@ -250,7 +316,10 @@
     "c1x": 85.78,
     "majorFinish": "3rd, DGPT+ Barbasol Open at Austin presented by Hampton Inn/Home2 Suites Austin East (ES)",
     "standing": "23rd",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-262846-1747284332.jpg?itok=k2Tqp8bt"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-262846-1747284332.jpg?itok=k2Tqp8bt",
+    "eventsPlayed": 9,
+    "avgFinish": 28.1,
+    "memberSince": 2016
   },
   {
     "name": "Andrew Marwede",
@@ -261,7 +330,10 @@
     "c1x": 95.42,
     "majorFinish": "8th, DGPT+ / WGE - OTB Open by MVP Disc Sports (ES)",
     "standing": "24th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-250956-1747116373.jpg?itok=WSR9ZC0a"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-250956-1747116373.jpg?itok=WSR9ZC0a",
+    "eventsPlayed": 9,
+    "avgFinish": 24.2,
+    "memberSince": 2015
   },
   {
     "name": "Bradley Williams",
@@ -272,7 +344,10 @@
     "c1x": 89.9,
     "majorFinish": "9th, DGPT+ Northwest Championship Presented by Latitude 64° (ES)",
     "standing": "25th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-556601-1780775315.jpg?itok=9Qcn_UW8"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-556601-1780775315.jpg?itok=9Qcn_UW8",
+    "eventsPlayed": 12,
+    "avgFinish": 39.1,
+    "memberSince": 2007
   },
   {
     "name": "Chris Dickerson",
@@ -283,7 +358,10 @@
     "c1x": 85.35,
     "majorFinish": "6th, DGPT - MVP Big Easy Open presented by Flight Factory (ES)",
     "standing": "26th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-189156-1709827676.jpg?itok=C91EVRJu"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-189156-1709827676.jpg?itok=C91EVRJu",
+    "eventsPlayed": 7,
+    "avgFinish": 16.4,
+    "memberSince": 2013
   },
   {
     "name": "Braeden Sides",
@@ -294,7 +372,10 @@
     "c1x": 80.91,
     "majorFinish": "10th, DGPT - Ale Open presented by Discraft (ES)",
     "standing": "27th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1332121-1743182908.jpg?itok=6ifXqjU3"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1332121-1743182908.jpg?itok=6ifXqjU3",
+    "eventsPlayed": 12,
+    "avgFinish": 35.2,
+    "memberSince": 2019
   },
   {
     "name": "Austin Turner",
@@ -305,7 +386,10 @@
     "c1x": 78.63,
     "majorFinish": "8th, DGPT - Queen City Classic presented by Another Round (ES)",
     "standing": "28th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-216261-1774806784.jpg?itok=Ojt4Huv6"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-216261-1774806784.jpg?itok=Ojt4Huv6",
+    "eventsPlayed": 10,
+    "avgFinish": 31.9,
+    "memberSince": 2012
   },
   {
     "name": "Mauri Villmann",
@@ -316,7 +400,10 @@
     "c1x": 85.42,
     "majorFinish": "9th, 2026 PDGA European Open (M)",
     "standing": "29th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-869786-1748256710.jpg?itok=aRBnFnnb"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-869786-1748256710.jpg?itok=aRBnFnnb",
+    "eventsPlayed": 8,
+    "avgFinish": 26.9,
+    "memberSince": 2018
   },
   {
     "name": "Paul Ulibarri",
@@ -327,7 +414,10 @@
     "c1x": 89.76,
     "majorFinish": "1st, DGPT+ Barbasol Open at Austin presented by Hampton Inn/Home2 Suites Austin East (ES)",
     "standing": "30th",
-    "photo": null
+    "photo": null,
+    "eventsPlayed": 9,
+    "avgFinish": 36.6,
+    "memberSince": 2005
   },
   {
     "name": "Paul Krans",
@@ -338,7 +428,10 @@
     "c1x": 92.13,
     "majorFinish": "12th, DGPT+ Barbasol Open at Austin presented by Hampton Inn/Home2 Suites Austin East (ES)",
     "standing": "31st",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1381076-1704666657.jpg?itok=xb-9Lxjd"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1381076-1704666657.jpg?itok=xb-9Lxjd",
+    "eventsPlayed": 9,
+    "avgFinish": 26.9,
+    "memberSince": 2020
   },
   {
     "name": "Corey Ellis",
@@ -349,7 +442,10 @@
     "c1x": 90.16,
     "majorFinish": "5th, DGPT+ Northwest Championship Presented by Latitude 64° (ES)",
     "standing": "32nd",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-23628-1705302116.jpg?itok=lHSpcVwh"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-23628-1705302116.jpg?itok=lHSpcVwh",
+    "eventsPlayed": 7,
+    "avgFinish": 26.7,
+    "memberSince": 2010
   },
   {
     "name": "Jakub Semerád",
@@ -360,7 +456,10 @@
     "c1x": 84.86,
     "majorFinish": "15th, DGPT - MVP Big Easy Open presented by Flight Factory (ES)",
     "standing": "33rd",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-342191-1712969324.jpg?itok=zFyc1IxU"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-342191-1712969324.jpg?itok=zFyc1IxU",
+    "eventsPlayed": 11,
+    "avgFinish": 37.1,
+    "memberSince": 2017
   },
   {
     "name": "Parker Welck",
@@ -371,7 +470,10 @@
     "c1x": 88.02,
     "majorFinish": "10th, DGPT+ / WGE - OTB Open by MVP Disc Sports (ES)",
     "standing": "34th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-924931-1776187600.jpg?itok=mVbYiXA5"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-924931-1776187600.jpg?itok=mVbYiXA5",
+    "eventsPlayed": 9,
+    "avgFinish": 28.2,
+    "memberSince": 2009
   },
   {
     "name": "Evan Scott",
@@ -382,7 +484,10 @@
     "c1x": 83.09,
     "majorFinish": "5th, DGPT+ Barbasol Open at Austin presented by Hampton Inn/Home2 Suites Austin East (ES)",
     "standing": "35th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-2084741-1770741454.jpg?itok=ocZ7MnsI"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-2084741-1770741454.jpg?itok=ocZ7MnsI",
+    "eventsPlayed": 12,
+    "avgFinish": 45.3,
+    "memberSince": 2016
   },
   {
     "name": "Clay Edwards",
@@ -393,7 +498,10 @@
     "c1x": 91.52,
     "majorFinish": "12th, DGPT+ Barbasol Open at Austin presented by Hampton Inn/Home2 Suites Austin East (ES)",
     "standing": "36th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-334461-1778361140.jpg?itok=u2PoYQE6"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-334461-1778361140.jpg?itok=u2PoYQE6",
+    "eventsPlayed": 12,
+    "avgFinish": 39.3,
+    "memberSince": 2017
   },
   {
     "name": "Väinö Mäkelä",
@@ -404,7 +512,10 @@
     "c1x": 82.24,
     "majorFinish": "15th, DGPT+ Northwest Championship Presented by Latitude 64° (ES)",
     "standing": "37th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-341826-1742503128.jpg?itok=jgNm8eCQ"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-341826-1742503128.jpg?itok=jgNm8eCQ",
+    "eventsPlayed": 9,
+    "avgFinish": 32.3,
+    "memberSince": 2013
   },
   {
     "name": "Albert Tamm",
@@ -415,7 +526,10 @@
     "c1x": 79.7,
     "majorFinish": "7th, DGPT+ Northwest Championship Presented by Latitude 64° (ES)",
     "standing": "38th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-262446-1645168149.jpg?itok=57SInMVO"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-262446-1645168149.jpg?itok=57SInMVO",
+    "eventsPlayed": 11,
+    "avgFinish": 45.4,
+    "memberSince": 2015
   },
   {
     "name": "Evan Smith",
@@ -426,7 +540,10 @@
     "c1x": 90.9,
     "majorFinish": "2nd, DGPT - Queen City Classic presented by Another Round (ES)",
     "standing": "39th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-653241-1739364758.jpg?itok=XNIWtNa6"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-653241-1739364758.jpg?itok=XNIWtNa6",
+    "eventsPlayed": 4,
+    "avgFinish": 12.3,
+    "memberSince": 2017
   },
   {
     "name": "Robert Burridge",
@@ -437,7 +554,10 @@
     "c1x": 80.6,
     "majorFinish": "9th, DGPT - Play it Again Sports Jonesboro Open presented by Westside Discs (ES)",
     "standing": "40th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-391621-1707004465.jpg?itok=gKvYu8EK"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-391621-1707004465.jpg?itok=gKvYu8EK",
+    "eventsPlayed": 11,
+    "avgFinish": 39.6,
+    "memberSince": 2017
   },
   {
     "name": "Holyn Handley",
@@ -448,7 +568,10 @@
     "c1x": 81.12,
     "majorFinish": "1st, DGPT - MVP Big Easy Open presented by Flight Factory (ES) & DGPT+ / WGE - OTB Open by MVP Disc Sports (ES)",
     "standing": "1st",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1397416-1678127130.jpg?itok=_SOdlqi4"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1397416-1678127130.jpg?itok=_SOdlqi4",
+    "eventsPlayed": 12,
+    "avgFinish": 3.8,
+    "memberSince": 2020
   },
   {
     "name": "Silva Saarinen",
@@ -459,7 +582,10 @@
     "c1x": 80.54,
     "majorFinish": "1st, 2026 PDGA Champions Cup Presented by Vessi (M) & DGPT+ Northwest Championship Presented by Latitude 64° (ES) & DGPT - Swedish Open presented by Kastaplast (ES)",
     "standing": "2nd",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-874511-1693426745.jpg?itok=REIhsVMN"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-874511-1693426745.jpg?itok=REIhsVMN",
+    "eventsPlayed": 9,
+    "avgFinish": 4.6,
+    "memberSince": 2018
   },
   {
     "name": "Missy Gannon",
@@ -470,7 +596,10 @@
     "c1x": 85.17,
     "majorFinish": "4th, DGPT - MVP Big Easy Open presented by Flight Factory (ES) & DGPT - GRIPeq 44th Kansas City Wide Open presented by Nexus Disc Golf (ES) & DGPT+ Northwest Championship Presented by Latitude 64° (ES) & DGPT - Ale Open presented by Discraft (ES)",
     "standing": "3rd",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-305056-1747519293.jpg?itok=DPFT9NKF"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-305056-1747519293.jpg?itok=DPFT9NKF",
+    "eventsPlayed": 11,
+    "avgFinish": 5.3,
+    "memberSince": 2016
   },
   {
     "name": "Ohn Scoggins",
@@ -481,7 +610,10 @@
     "c1x": 82.53,
     "majorFinish": "1st, DGPT - Discraft’s Supreme Flight Open Presented by Florida’s Adventure Coast (ES) & DGPT+ Barbasol Open at Austin presented by Hampton Inn/Home2 Suites Austin East (ES)",
     "standing": "4th",
-    "photo": null
+    "photo": null,
+    "eventsPlayed": 8,
+    "avgFinish": 2.8,
+    "memberSince": 2011
   },
   {
     "name": "Ella Hansen",
@@ -492,7 +624,10 @@
     "c1x": 72.1,
     "majorFinish": "4th, DGPT+ / WGE - OTB Open by MVP Disc Sports (ES) & 2026 PDGA European Open (M)",
     "standing": "5th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1549021-1741978029.jpg?itok=QNhwfk7W"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1549021-1741978029.jpg?itok=QNhwfk7W",
+    "eventsPlayed": 12,
+    "avgFinish": 8.9,
+    "memberSince": 2020
   },
   {
     "name": "Eveliina Salonen",
@@ -503,7 +638,10 @@
     "c1x": 68.2,
     "majorFinish": "1st, DGPT - GRIPeq 44th Kansas City Wide Open presented by Nexus Disc Golf (ES) & 2026 PDGA European Open (M) & DGPT - Ale Open presented by Discraft (ES)",
     "standing": "6th",
-    "photo": null
+    "photo": null,
+    "eventsPlayed": 8,
+    "avgFinish": 5,
+    "memberSince": 2014
   },
   {
     "name": "Catrina Allen",
@@ -514,7 +652,10 @@
     "c1x": 77.05,
     "majorFinish": "4th, DGPT - Play it Again Sports Jonesboro Open presented by Westside Discs (ES)",
     "standing": "7th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-165676-1449190620.jpg?itok=8PyKbCV1"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-165676-1449190620.jpg?itok=8PyKbCV1",
+    "eventsPlayed": 12,
+    "avgFinish": 11.4,
+    "memberSince": 2010
   },
   {
     "name": "Kat Mertsch",
@@ -525,7 +666,10 @@
     "c1x": 80.43,
     "majorFinish": "3rd, DGPT - Queen City Classic presented by Another Round (ES)",
     "standing": "8th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-589121-1733583231.jpg?itok=qcw0-ElA"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-589121-1733583231.jpg?itok=qcw0-ElA",
+    "eventsPlayed": 12,
+    "avgFinish": 14.8,
+    "memberSince": 2017
   },
   {
     "name": "Henna Blomroos",
@@ -536,7 +680,10 @@
     "c1x": 58.27,
     "majorFinish": "1st, DGPT - Play it Again Sports Jonesboro Open presented by Westside Discs (ES)",
     "standing": "9th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-338541-1726838849.jpg?itok=Majk56me"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-338541-1726838849.jpg?itok=Majk56me",
+    "eventsPlayed": 8,
+    "avgFinish": 10.9,
+    "memberSince": 2013
   },
   {
     "name": "Rebecca Don",
@@ -547,7 +694,10 @@
     "c1x": 78.84,
     "majorFinish": "5th, DGPT+ / WGE - OTB Open by MVP Disc Sports (ES)",
     "standing": "10th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-2291836-1780419355.jpg?itok=mSoDlKZW"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-2291836-1780419355.jpg?itok=mSoDlKZW",
+    "eventsPlayed": 11,
+    "avgFinish": 16.3,
+    "memberSince": 2022
   },
   {
     "name": "Emily Weatherman",
@@ -558,7 +708,10 @@
     "c1x": 83.55,
     "majorFinish": "7th, DGPT - Play it Again Sports Jonesboro Open presented by Westside Discs (ES)",
     "standing": "11th",
-    "photo": null
+    "photo": null,
+    "eventsPlayed": 10,
+    "avgFinish": 16.7,
+    "memberSince": 2018
   },
   {
     "name": "Heidi Laine",
@@ -569,7 +722,10 @@
     "c1x": 67.11,
     "majorFinish": "7th, DGPT+ / WGE - OTB Open by MVP Disc Sports (ES)",
     "standing": "12th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-345281-1741123571.jpg?itok=ZRvPpoXt"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-345281-1741123571.jpg?itok=ZRvPpoXt",
+    "eventsPlayed": 11,
+    "avgFinish": 18.7,
+    "memberSince": 2014
   },
   {
     "name": "Taylor Chocek",
@@ -580,7 +736,10 @@
     "c1x": 82.44,
     "majorFinish": "2nd, DGPT - Discraft’s Supreme Flight Open Presented by Florida’s Adventure Coast (ES)",
     "standing": "13th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-2056671-1777646427.jpg?itok=cwIy3dMM"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-2056671-1777646427.jpg?itok=cwIy3dMM",
+    "eventsPlayed": 11,
+    "avgFinish": 18.4,
+    "memberSince": 2021
   },
   {
     "name": "Eliezra Midtlyng",
@@ -591,7 +750,10 @@
     "c1x": 68.97,
     "majorFinish": "3rd, DGPT+ Northwest Championship Presented by Latitude 64° (ES)",
     "standing": "14th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-2830930-1729471437.jpg?itok=gEasgR3n"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-2830930-1729471437.jpg?itok=gEasgR3n",
+    "eventsPlayed": 12,
+    "avgFinish": 21.2,
+    "memberSince": 2021
   },
   {
     "name": "Sintija Klezberga",
@@ -602,7 +764,10 @@
     "c1x": 75.46,
     "majorFinish": "6th, 2026 PDGA Champions Cup Presented by Vessi (M) & 2026 PDGA European Open (M)",
     "standing": "15th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-2536836-1759094763.jpg?itok=NAHJvAoi"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-2536836-1759094763.jpg?itok=NAHJvAoi",
+    "eventsPlayed": 8,
+    "avgFinish": 13.5,
+    "memberSince": 2022
   },
   {
     "name": "Anniken Kristiansen Steen",
@@ -613,7 +778,10 @@
     "c1x": 79.18,
     "majorFinish": "3rd, DGPT - Queen City Classic presented by Another Round (ES)",
     "standing": "16th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-955056-1729808640.jpg?itok=1tDE-Qp3"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-955056-1729808640.jpg?itok=1tDE-Qp3",
+    "eventsPlayed": 8,
+    "avgFinish": 13.3,
+    "memberSince": 2018
   },
   {
     "name": "Paige Pierce",
@@ -624,7 +792,10 @@
     "c1x": 74.37,
     "majorFinish": "8th, 2026 PDGA Champions Cup Presented by Vessi (M)",
     "standing": "17th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-4101-1630012514.jpg?itok=GRu-URNA"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-4101-1630012514.jpg?itok=GRu-URNA",
+    "eventsPlayed": 9,
+    "avgFinish": 16.6,
+    "memberSince": 2006
   },
   {
     "name": "Valerie Mandujano",
@@ -635,7 +806,10 @@
     "c1x": 78.16,
     "majorFinish": "2nd, DGPT - MVP Big Easy Open presented by Flight Factory (ES)",
     "standing": "18th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-25959-1682206574.jpg?itok=etswbSNV"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-25959-1682206574.jpg?itok=etswbSNV",
+    "eventsPlayed": 6,
+    "avgFinish": 7.5,
+    "memberSince": 2014
   },
   {
     "name": "Madison Walker",
@@ -646,7 +820,10 @@
     "c1x": 75.82,
     "majorFinish": "8th, DGPT+ Barbasol Open at Austin presented by Hampton Inn/Home2 Suites Austin East (ES)",
     "standing": "19th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-19489-1760468220.jpg?itok=SmwOOLF2"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-19489-1760468220.jpg?itok=SmwOOLF2",
+    "eventsPlayed": 11,
+    "avgFinish": 20.7,
+    "memberSince": 2013
   },
   {
     "name": "Jessica Gurthie",
@@ -657,7 +834,10 @@
     "c1x": 72.76,
     "majorFinish": "1st, DGPT - Queen City Classic presented by Another Round (ES)",
     "standing": "20th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-288311-1758818282.jpg?itok=46x-dA4c"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-288311-1758818282.jpg?itok=46x-dA4c",
+    "eventsPlayed": 8,
+    "avgFinish": 16.3,
+    "memberSince": 2011
   },
   {
     "name": "Lisa Fajkus",
@@ -668,7 +848,10 @@
     "c1x": 78.8,
     "majorFinish": "2nd, DGPT - MVP Big Easy Open presented by Flight Factory (ES)",
     "standing": "21st",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-192306-1768447489.jpg?itok=h__wxGWb"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-192306-1768447489.jpg?itok=h__wxGWb",
+    "eventsPlayed": 8,
+    "avgFinish": 17,
+    "memberSince": 2007
   },
   {
     "name": "Hanna Huynh",
@@ -679,7 +862,10 @@
     "c1x": 80.08,
     "majorFinish": "9th, DGPT - Discraft’s Supreme Flight Open Presented by Florida’s Adventure Coast (ES)",
     "standing": "22nd",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1057441-1752240250.jpg?itok=FQ5C68Bd"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1057441-1752240250.jpg?itok=FQ5C68Bd",
+    "eventsPlayed": 7,
+    "avgFinish": 12,
+    "memberSince": 2018
   },
   {
     "name": "Sofia Donnecke",
@@ -690,7 +876,10 @@
     "c1x": 67.42,
     "majorFinish": "7th, DGPT - Discraft’s Supreme Flight Open Presented by Florida’s Adventure Coast (ES) & DGPT - GRIPeq 44th Kansas City Wide Open presented by Nexus Disc Golf (ES)",
     "standing": "23rd",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1996996-1760636051.jpg?itok=UPrqmwDp"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1996996-1760636051.jpg?itok=UPrqmwDp",
+    "eventsPlayed": 7,
+    "avgFinish": 14.3,
+    "memberSince": 2021
   },
   {
     "name": "Kona Star Montgomery",
@@ -701,7 +890,10 @@
     "c1x": 66.57,
     "majorFinish": "6th, DGPT - Play it Again Sports Jonesboro Open presented by Westside Discs (ES)",
     "standing": "24th",
-    "photo": null
+    "photo": null,
+    "eventsPlayed": 7,
+    "avgFinish": 17.6,
+    "memberSince": 2005
   },
   {
     "name": "Anneli Tõugjas-Männiste",
@@ -712,7 +904,10 @@
     "c1x": 70.79,
     "majorFinish": "9th, DGPT - Play it Again Sports Jonesboro Open presented by Westside Discs (ES)",
     "standing": "25th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-327806-1752488503.jpg?itok=NqlK4kSq"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-327806-1752488503.jpg?itok=NqlK4kSq",
+    "eventsPlayed": 7,
+    "avgFinish": 17.9,
+    "memberSince": 2016
   },
   {
     "name": "Raven Klein",
@@ -723,7 +918,10 @@
     "c1x": 74.7,
     "majorFinish": "5th, DGPT - GRIPeq 44th Kansas City Wide Open presented by Nexus Disc Golf (ES)",
     "standing": "26th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1472766-1777255097.jpg?itok=7BYON-Do"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1472766-1777255097.jpg?itok=7BYON-Do",
+    "eventsPlayed": 9,
+    "avgFinish": 23.4,
+    "memberSince": 2020
   },
   {
     "name": "Iida Lehtomäki",
@@ -734,7 +932,10 @@
     "c1x": 68.1,
     "majorFinish": "5th, 2026 PDGA Champions Cup Presented by Vessi (M)",
     "standing": "27th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-2655396-1754134284.jpg?itok=SRkfQh7w"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-2655396-1754134284.jpg?itok=SRkfQh7w",
+    "eventsPlayed": 4,
+    "avgFinish": 14.3,
+    "memberSince": 2022
   },
   {
     "name": "Julia Fors",
@@ -745,7 +946,10 @@
     "c1x": null,
     "majorFinish": "2nd, 2026 PDGA European Open (M) & DGPT - Ale Open presented by Discraft (ES)",
     "standing": "28th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-2467306-1768583585.jpg?itok=vx2IvGOc"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-2467306-1768583585.jpg?itok=vx2IvGOc",
+    "eventsPlayed": 3,
+    "avgFinish": 6.3,
+    "memberSince": 2022
   },
   {
     "name": "Amanda Lennartsson",
@@ -756,7 +960,10 @@
     "c1x": null,
     "majorFinish": "7th, DGPT - Swedish Open presented by Kastaplast (ES)",
     "standing": "29th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1677176-1779907272.jpg?itok=6dCR7sfB"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1677176-1779907272.jpg?itok=6dCR7sfB",
+    "eventsPlayed": 5,
+    "avgFinish": 14.4,
+    "memberSince": 2020
   },
   {
     "name": "Chandler Reigh",
@@ -767,7 +974,10 @@
     "c1x": 77.24,
     "majorFinish": "13th, DGPT - Discraft’s Supreme Flight Open Presented by Florida’s Adventure Coast (ES)",
     "standing": "30th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-2827163-1776093550.jpg?itok=NmhvWvbC"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-2827163-1776093550.jpg?itok=NmhvWvbC",
+    "eventsPlayed": 9,
+    "avgFinish": 25.4,
+    "memberSince": 2024
   },
   {
     "name": "Rebecca Cox",
@@ -778,7 +988,10 @@
     "c1x": 67.52,
     "majorFinish": "10th, DGPT - MVP Big Easy Open presented by Flight Factory (ES)",
     "standing": "31st",
-    "photo": null
+    "photo": null,
+    "eventsPlayed": 8,
+    "avgFinish": 23.8,
+    "memberSince": 2007
   },
   {
     "name": "Alexis Mandujano",
@@ -789,7 +1002,10 @@
     "c1x": 82.1,
     "majorFinish": "10th, DGPT - MVP Big Easy Open presented by Flight Factory (ES)",
     "standing": "32nd",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-2822384-1701873595.jpg?itok=soyNwXO6"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-2822384-1701873595.jpg?itok=soyNwXO6",
+    "eventsPlayed": 4,
+    "avgFinish": 13,
+    "memberSince": 2014
   },
   {
     "name": "Dani K. Hart",
@@ -800,7 +1016,10 @@
     "c1x": 71.43,
     "majorFinish": "16th, DGPT+ Barbasol Open at Austin presented by Hampton Inn/Home2 Suites Austin East (ES)",
     "standing": "33rd",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1562936-1781479207.jpg?itok=hoehTua-"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1562936-1781479207.jpg?itok=hoehTua-",
+    "eventsPlayed": 7,
+    "avgFinish": 25.1,
+    "memberSince": 2020
   },
   {
     "name": "Jennifer Smiley",
@@ -811,7 +1030,10 @@
     "c1x": 77.54,
     "majorFinish": "18th, DGPT - MVP Big Easy Open presented by Flight Factory (ES)",
     "standing": "34th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1986981-1743818377.jpg?itok=D3W9Vhk7"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1986981-1743818377.jpg?itok=D3W9Vhk7",
+    "eventsPlayed": 9,
+    "avgFinish": 29.3,
+    "memberSince": 2021
   },
   {
     "name": "Ida Emilie Nesse",
@@ -822,7 +1044,10 @@
     "c1x": null,
     "majorFinish": "8th, DGPT - MVP Big Easy Open presented by Flight Factory (ES)",
     "standing": "35th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-2715242-1772301400.jpg?itok=jLpHrBDJ"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-2715242-1772301400.jpg?itok=jLpHrBDJ",
+    "eventsPlayed": 5,
+    "avgFinish": 15.6,
+    "memberSince": 2021
   },
   {
     "name": "Kristýna Jurčíková",
@@ -833,7 +1058,10 @@
     "c1x": null,
     "majorFinish": "3rd, 2026 PDGA European Open (M)",
     "standing": "36th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-2317231-1781265929.jpg?itok=W7MXkmGh"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-2317231-1781265929.jpg?itok=W7MXkmGh",
+    "eventsPlayed": 2,
+    "avgFinish": 3.5,
+    "memberSince": 2022
   },
   {
     "name": "Jennifer Allen",
@@ -844,7 +1072,10 @@
     "c1x": null,
     "majorFinish": "1st, 2026 Tim Selinske United States Masters Disc Golf Championships (M)",
     "standing": "37th",
-    "photo": null
+    "photo": null,
+    "eventsPlayed": 5,
+    "avgFinish": 13,
+    "memberSince": 1999
   },
   {
     "name": "Macie Velediaz",
@@ -855,7 +1086,10 @@
     "c1x": 75.5,
     "majorFinish": "8th, 2026 PDGA Champions Cup Presented by Vessi (M)",
     "standing": "38th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-931501-1595183121.jpg?itok=wr8isA2R"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-931501-1595183121.jpg?itok=wr8isA2R",
+    "eventsPlayed": 4,
+    "avgFinish": 17.3,
+    "memberSince": 2018
   },
   {
     "name": "Kelley Foster",
@@ -866,7 +1100,10 @@
     "c1x": 79.35,
     "majorFinish": "22nd, DGPT - MVP Big Easy Open presented by Flight Factory (ES)",
     "standing": "39th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1639026-1747409437.jpg?itok=cijo1I_W"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-1639026-1747409437.jpg?itok=cijo1I_W",
+    "eventsPlayed": 7,
+    "avgFinish": 28.9,
+    "memberSince": 2020
   },
   {
     "name": "Matilda Ringbom",
@@ -877,6 +1114,9 @@
     "c1x": null,
     "majorFinish": "3rd, DGPT - Swedish Open presented by Kastaplast (ES)",
     "standing": "40th",
-    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-286841-1693511863.jpg?itok=NSStt4ow"
+    "photo": "https://www.pdga.com/files/styles/large/public/pictures/picture-286841-1693511863.jpg?itok=NSStt4ow",
+    "eventsPlayed": 3,
+    "avgFinish": 12.3,
+    "memberSince": 2015
   }
 ]
