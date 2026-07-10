@@ -24,6 +24,7 @@
   :root{
     --green-deep:#16302A;
     --green-mid:#1E4238;
+    --bg-highlight:#234a3f;
     --cream:#F2ECDA;
     --cream-dim:#DCD4B8;
     --orange:#E8623D;
@@ -32,12 +33,17 @@
     --ink:#12211C;
     --miss:#7c6b52;
   }
+  body.easy-theme{
+    --green-deep:#122b40;
+    --green-mid:#1c5480;
+    --bg-highlight:#1f4c68;
+  }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
     min-height:100vh;
     background:
-      radial-gradient(circle at 50% -10%, #234a3f 0%, var(--green-deep) 55%),
+      radial-gradient(circle at 50% -10%, var(--bg-highlight) 0%, var(--green-deep) 55%),
       repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 40px);
     color:var(--cream);
     font-family:'Oswald', sans-serif;
@@ -45,6 +51,7 @@
     align-items:center;
     justify-content:center;
     padding:24px 16px 60px;
+    transition:background .6s ease;
   }
   .app{ width:100%; max-width:460px; }
 
@@ -104,7 +111,7 @@
     letter-spacing:0.04em;
     text-transform:uppercase;
     cursor:pointer;
-    transition:transform .12s ease, background .12s ease;
+    transition:transform .12s ease, background .4s ease;
   }
   .disc-btn:hover{ background:var(--orange); transform:translateY(-2px); }
   .disc-btn:disabled{ opacity:0.5; cursor:not-allowed; transform:none; }
@@ -131,6 +138,7 @@
     position:absolute; inset:6px;
     border-radius:50%;
     background:var(--green-mid);
+    transition:background .4s ease;
   }
   .disc-btn:hover .disc-icon::after{ background:var(--orange); }
   .pick-sub{
@@ -147,6 +155,7 @@
     border-radius:10px;
     padding:16px 10px 8px;
     margin-bottom:18px;
+    transition:background .5s ease;
   }
   svg#flightpath{ width:100%; height:90px; display:block; }
   .flight-caption{
@@ -286,6 +295,7 @@
     text-transform:uppercase;
     font-weight:600;
     cursor:pointer;
+    transition:background .4s ease;
   }
   .menu-btn{
     background:transparent;
@@ -297,6 +307,7 @@
     text-transform:uppercase;
     font-weight:600;
     cursor:pointer;
+    transition:color .4s ease, border-color .4s ease;
   }
   .hidden{ display:none !important; }
   .debug-btn{
@@ -329,26 +340,6 @@
     cursor:pointer;
   }
   .howto-btn:hover{ background:#cfc6a8; }
-  .coffee-btn{
-    display:block;
-    width:100%;
-    box-sizing:border-box;
-    margin-top:26px;
-    background:none;
-    border:1px solid var(--green-mid);
-    color:var(--green-mid);
-    padding:9px 14px;
-    border-radius:8px;
-    font-family:'Oswald', sans-serif;
-    font-size:13px;
-    font-weight:600;
-    letter-spacing:0.03em;
-    text-transform:uppercase;
-    text-align:center;
-    text-decoration:none;
-    cursor:pointer;
-  }
-  .coffee-btn:hover{ background:var(--green-mid); color:var(--cream); }
 
   .modal-overlay{
     position:fixed;
@@ -430,6 +421,31 @@
     margin-top:16px;
     line-height:1.5;
   }
+  .difficulty-toggle{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    margin-bottom:16px;
+  }
+  .diff-btn{
+    width:100%;
+    background:none;
+    border:1px solid var(--cream-dim);
+    color:#7a7259;
+    padding:10px 10px;
+    border-radius:10px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:0.02em;
+    cursor:pointer;
+    transition:background-color .4s ease, border-color .4s ease, color .4s ease;
+  }
+  .diff-btn.active{
+    background:var(--green-mid);
+    border-color:var(--green-mid);
+    color:var(--cream);
+  }
 </style>
 </head>
 <body>
@@ -440,24 +456,16 @@
 
   <div class="card" id="pickScreen">
     <p style="font-family:'JetBrains Mono',monospace;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#5a5142;text-align:center;margin-top:0;">Choose your field</p>
+    <div class="difficulty-toggle" id="difficultyToggle">
+      <button class="diff-btn" data-difficulty="easy">Easy — Includes Top 20 Players</button>
+      <button class="diff-btn active" data-difficulty="normal">Normal — Includes Top 40 Players</button>
+    </div>
     <button class="disc-btn" data-div="MPO"><span class="disc-icon"></span> MPO <span class="status-badge" data-status-for="MPO"></span></button>
     <button class="disc-btn" data-div="FPO"><span class="disc-icon"></span> FPO <span class="status-badge" data-status-for="FPO"></span></button>
     <button class="disc-btn" data-div="MIX"><span class="disc-icon"></span> Mixed Field <span class="status-badge" data-status-for="MIX"></span></button>
     <div class="pick-sub" id="dateLabel"></div>
     <button class="howto-btn" id="howToPlayBtn">❔ How to Play</button>
-    <button class="coffee-btn" id="coffeeBtn">☕ Buy me a coffee</button>
     <button class="debug-btn hidden" id="debugBtn">🛠 Debug: Random Player</button>
-  </div>
-
-  <div class="modal-overlay hidden" id="coffeeConfirmOverlay">
-    <div class="modal-card">
-      <h2 class="modal-title">Buy Me a Coffee?</h2>
-      <p class="modal-body">This opens PayPal in a new tab to send a small tip if you're enjoying Fairway Five. Totally optional, no pressure!</p>
-      <div class="result-actions">
-        <button class="menu-btn" id="coffeeCancelBtn">Never Mind</button>
-        <button class="share-btn" id="coffeeConfirmBtn">Take Me There</button>
-      </div>
-    </div>
   </div>
 
   <div class="modal-overlay hidden" id="howToPlayOverlay">
@@ -641,6 +649,12 @@ function isEligibleAnswer(p){
   return availableHintCount(p) >= MIN_HINTS_REQUIRED;
 }
 
+// Parses the leading number out of a standing string like "15th" -> 15.
+// Used to filter to top-N standings for difficulty modes.
+function standingNumber(p){
+  return parseInt(p.standing, 10);
+}
+
 // ===== CONFIG: point this at your repo's raw players.json =====
 // e.g. "https://raw.githubusercontent.com/<user>/<repo>/main/players.json"
 // Kept fresh by .github/workflows/refresh-data.yml. Replace the placeholder
@@ -682,6 +696,8 @@ let hintOrder = [];
 let guessHistory = [];
 let gameOver = false;
 let currentDivision = "MPO";
+let currentDifficulty = "normal"; // "normal" (top 40) or "easy" (top 20)
+const EASY_MODE_LIMIT = 20;
 
 function dateSeed(str){
   let h = 0;
@@ -720,6 +736,15 @@ document.querySelectorAll(".disc-btn").forEach(btn=>{
   });
 });
 
+document.querySelectorAll(".diff-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    currentDifficulty = btn.dataset.difficulty;
+    document.querySelectorAll(".diff-btn").forEach(b=>b.classList.toggle("active", b===btn));
+    document.body.classList.toggle("easy-theme", currentDifficulty === "easy");
+    updateMenuStatusBadges();
+  });
+});
+
 loadPlayers();
 
 let debugTapCount = 0;
@@ -746,24 +771,6 @@ document.getElementById("howToPlayOverlay").addEventListener("click", (e)=>{
   }
 });
 
-const COFFEE_URL = "https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=smallcityguitar@gmail.com&item_name=Buy+me+a+coffee+-+Fairway+Five&currency_code=USD";
-
-document.getElementById("coffeeBtn").addEventListener("click", ()=>{
-  document.getElementById("coffeeConfirmOverlay").classList.remove("hidden");
-});
-document.getElementById("coffeeCancelBtn").addEventListener("click", ()=>{
-  document.getElementById("coffeeConfirmOverlay").classList.add("hidden");
-});
-document.getElementById("coffeeConfirmBtn").addEventListener("click", ()=>{
-  document.getElementById("coffeeConfirmOverlay").classList.add("hidden");
-  window.open(COFFEE_URL, "_blank", "noopener");
-});
-document.getElementById("coffeeConfirmOverlay").addEventListener("click", (e)=>{
-  if(e.target.id === "coffeeConfirmOverlay"){
-    document.getElementById("coffeeConfirmOverlay").classList.add("hidden");
-  }
-});
-
 function backToMenu(){
   document.getElementById("gameScreen").classList.add("hidden");
   document.getElementById("pickScreen").classList.remove("hidden");
@@ -780,19 +787,21 @@ function seedVersionFor(div){
   return SEED_VERSION_OVERRIDES[div] ?? SEED_VERSION;
 }
 
-function getDailyAnswer(div){
+function getDailyAnswer(div, difficulty){
   const answerPool = PLAYERS.filter(p=>
-    (div === "MIX" || p.div === div) && isEligibleAnswer(p)
+    (div === "MIX" || p.div === div) &&
+    isEligibleAnswer(p) &&
+    (difficulty !== "easy" || standingNumber(p) <= EASY_MODE_LIMIT)
   );
-  const seed = dateSeed(todayStr() + "-" + div + "-v" + seedVersionFor(div));
+  const seed = dateSeed(todayStr() + "-" + div + "-" + difficulty + "-v" + seedVersionFor(div));
   const rand = seededRandom(seed);
   rand(); // burn the first draw — improves distribution across small pools
 
   let candidates = answerPool;
   if(div === "MIX"){
     // Make sure MIX never coincides with whichever player MPO or FPO landed on today.
-    const mpoAnswer = getDailyAnswer("MPO");
-    const fpoAnswer = getDailyAnswer("FPO");
+    const mpoAnswer = getDailyAnswer("MPO", difficulty);
+    const fpoAnswer = getDailyAnswer("FPO", difficulty);
     const excluded = new Set([mpoAnswer && mpoAnswer.name, fpoAnswer && fpoAnswer.name]);
     const filtered = answerPool.filter(p=>!excluded.has(p.name));
     if(filtered.length > 0) candidates = filtered;
@@ -800,8 +809,8 @@ function getDailyAnswer(div){
   return candidates[Math.floor(rand()*candidates.length)];
 }
 
-function storageKey(div){
-  return "fairwayfive_progress_" + todayStr() + "_" + div;
+function storageKey(div, difficulty){
+  return "fairwayfive_progress_" + todayStr() + "_" + div + "_" + difficulty;
 }
 
 function saveProgress(){
@@ -809,7 +818,7 @@ function saveProgress(){
   const lastGuess = guessHistory[guessHistory.length-1];
   const won = gameOver && lastGuess && answer && lastGuess.toLowerCase() === answer.name.toLowerCase();
   try{
-    localStorage.setItem(storageKey(currentDivision), JSON.stringify({
+    localStorage.setItem(storageKey(currentDivision, currentDifficulty), JSON.stringify({
       answer: answer.name,
       guesses: guessHistory,
       gameOver,
@@ -825,9 +834,9 @@ function updateMenuStatusBadges(){
     if(!badge) return;
 
     let todaysAnswer;
-    try{ todaysAnswer = getDailyAnswer(div); } catch(e){ todaysAnswer = null; }
+    try{ todaysAnswer = getDailyAnswer(div, currentDifficulty); } catch(e){ todaysAnswer = null; }
 
-    const saved = loadProgress(div);
+    const saved = loadProgress(div, currentDifficulty);
     badge.className = "status-badge";
     badge.textContent = "";
 
@@ -848,24 +857,27 @@ function updateMenuStatusBadges(){
   });
 }
 
-function loadProgress(div){
+function loadProgress(div, difficulty){
   if(div === "DEBUG") return null;
   try{
-    const raw = localStorage.getItem(storageKey(div));
+    const raw = localStorage.getItem(storageKey(div, difficulty));
     if(!raw) return null;
     return JSON.parse(raw);
   } catch(e){ return null; }
 }
 
 function startGame(div){
-  pool = div === "MIX" ? PLAYERS.slice() : PLAYERS.filter(p=>p.div===div);
-  answer = getDailyAnswer(div);
-  beginRound(div);
+  const inDivision = div === "MIX" ? (()=>true) : (p=>p.div===div);
+  pool = PLAYERS.filter(p=>
+    inDivision(p) && (currentDifficulty !== "easy" || standingNumber(p) <= EASY_MODE_LIMIT)
+  );
+  answer = getDailyAnswer(div, currentDifficulty);
+  beginRound(div + (currentDifficulty === "easy" ? " · Easy" : ""));
 
   // Restore any progress already made on today's puzzle for this division —
   // this is what stops "back to menu, pick the same division again" from
   // acting as a free reset/retry.
-  const saved = loadProgress(div);
+  const saved = loadProgress(div, currentDifficulty);
   if(saved && saved.answer === answer.name && Array.isArray(saved.guesses)){
     for(const name of saved.guesses){
       if(gameOver) break;
@@ -1111,7 +1123,8 @@ function endGame(won){
       return "⬜";
     }).join("");
     const shareDate = new Date().toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
-    const text = "Fairway Five ("+currentDivision+") "+shareDate+" "+(won?guessCount:"X")+"/"+MAX_GUESSES+"\n"+grid;
+    const diffLabel = currentDifficulty === "easy" ? " · Easy" : "";
+    const text = "Fairway Five ("+currentDivision+diffLabel+") "+shareDate+" "+(won?guessCount:"X")+"/"+MAX_GUESSES+"\n"+grid;
     navigator.clipboard.writeText(text).then(()=>{
       document.getElementById("shareBtn").textContent = "Copied!";
       setTimeout(()=>{ document.getElementById("shareBtn").textContent = "Copy Result"; }, 1500);
