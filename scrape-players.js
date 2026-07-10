@@ -511,12 +511,20 @@ const MAJOR_ELITE_SCHEDULE_2026 = [
 // "Current" = the most recently STARTED event (start date <= today) — so an
 // event that's still ongoing counts as current, not the one before it.
 // Returns null if the season hasn't started yet (e.g. run in January).
+// Only references an event once it has fully CONCLUDED (end date <= today) —
+// not merely started. The scraper's own weekly schedule (Monday full
+// refresh) means results for a just-finished weekend event usually ARE
+// captured by the following Monday, but an event that's still IN PROGRESS
+// obviously can't have its results reflected in the data yet, and shouldn't
+// be named as if it were. Returns null if no MPO/FPO Major/Elite event has
+// concluded yet this year (e.g. run in January/early February).
 function getCurrentMajorEliteEvent() {
   const today = new Date().toISOString().slice(0, 10);
-  const started = MAJOR_ELITE_SCHEDULE_2026.filter(([, start]) => start <= today);
-  if (started.length === 0) return null;
-  started.sort((a, b) => (a[1] < b[1] ? 1 : -1)); // latest start date first
-  return started[0][0];
+  const concluded = MAJOR_ELITE_SCHEDULE_2026.filter(([, , end]) => end <= today);
+  if (concluded.length === 0) return null;
+  concluded.sort((a, b) => (a[2] < b[2] ? 1 : -1)); // latest end date first
+  const [name, , endDate] = concluded[0];
+  return { name, endDate };
 }
 
 // Writes a small meta.json alongside players.json, recording when this

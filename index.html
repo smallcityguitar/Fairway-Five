@@ -929,8 +929,11 @@ async function loadUpdateLabel(){
     const meta = await res.json();
     if(!meta.generatedAt) throw new Error("meta.json missing generatedAt");
 
-    if(meta.currentMajorEliteEvent){
-      document.getElementById("updateLabel").textContent = meta.currentMajorEliteEvent;
+    if(meta.currentMajorEliteEvent && meta.currentMajorEliteEvent.name){
+      const endDate = new Date(meta.currentMajorEliteEvent.endDate + "T12:00:00");
+      const dateLabel = endDate.toLocaleDateString("en-US", { month:"short", day:"numeric" });
+      document.getElementById("updateLabel").textContent =
+        "Stats as of " + meta.currentMajorEliteEvent.name + " / " + dateLabel;
     } else {
       const monthName = new Date(meta.generatedAt).toLocaleDateString("en-US", { month:"long" });
       document.getElementById("updateLabel").textContent = monthName + " PDGA Update";
