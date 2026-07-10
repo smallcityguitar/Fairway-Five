@@ -2,18 +2,29 @@
  * Fairway Five — player data scraper
  *
  * WHY THIS EXISTS
- * DGPT.com's standings/stats pages are client-side rendered (React pulling from
- * an internal API), so a plain fetch() only gets you the page shell, not the
- * table data. StatMando (the PDGA's stats partner) and PDGA.com itself both
- * serve fully server-rendered HTML for the same data, so this scraper targets
- * those instead. This exact approach was verified live on 09-Jul-2026.
+ * DGPT.com's standings page is WordPress with the actual table populated
+ * client-side via a JS call to /wp-admin/admin-ajax.php after page load, so
+ * a plain fetch() of the page itself only gets the empty shell. This scraper
+ * replicates that AJAX call directly (see getStandings()) — the nonce/token
+ * and page_id it needs are embedded in the plain HTML of the standings page,
+ * so no JS execution is required, just a regex to pull them out first.
+ * PDGA.com is server-rendered normally and needs no such trick.
  *
  * SOURCES USED
- * 1. Standings (rank):      https://statmando.com/rankings/dgpt/{mpo|fpo}
- * 2. C1X putting %:         https://statmando.com/stats/season-stats-putt-dgpt-{year}-{mpo|fpo}
- * 3. Hometown + rating +    https://www.pdga.com/player/{pdgaNumber}
- *    2026 results by tier      (Location, "Current Rating", and a table of this
- *                                year's events each tagged with a Tier: M, ES, A, B, C, XC)
+ * 1. Standings + real PDGA#:  https://www.dgpt.com/full-standings/?division={MPO|FPO}
+ *                                (via its own admin-ajax.php action=get_standings —
+ *                                 each row's data-pdgaid attribute is the athlete's
+ *                                 actual PDGA number, straight from DGPT itself)
+ * 2. C1X putting %:            https://statmando.com/stats/season-stats-putt-dgpt-{year}-{mpo|fpo}
+ *                                (DGPT's own standings response doesn't include
+ *                                 putting stats, so this one still comes from StatMando)
+ * 3. Hometown + rating +       https://www.pdga.com/player/{pdgaNumber}
+ *    2026 results by tier         (Location, "Current Rating", and a table of this
+ *                                   year's events each tagged with a Tier: M, ES, A, B, C, XC)
+ *
+ * This design means there's no manual name->PDGA# lookup table anymore — DGPT's
+ * own data provides the real number for every player, including new entrants
+ * who rotate into the top 40 mid-season. Verified live on 09-Jul-2026.
  *
  * TWO REFRESH MODES
  *   --mode=full     Rebuilds everything: standings, C1X, hometown, rating, and
@@ -109,28 +120,74 @@ async function fetchHtml(url, { retries = 5, baseDelay = 3000 } = {}) {
   throw new Error(`Failed to fetch ${url}: gave up after ${retries} retries`);
 }
 
-// 1. Standings: rank + player name + statmando slug
+// 1. Standings: rank + player name + REAL PDGA number, straight from DGPT's
+// own site. DGPT's standings page is client-rendered — the table itself is
+// populated by a JS call to /wp-admin/admin-ajax.php (action=get_standings)
+// after page load. That call needs a WordPress nonce ("token") and the
+// page's internal page_id, both of which are embedded in the plain HTML of
+// the standings page itself (no JS execution needed to read them — just
+// regex them out before making the POST).
+//
+// Crucially, each returned <tr> carries data-pdgaid="..." — the athlete's
+// actual PDGA number — eliminating the need for any manual name->PDGA#
+// lookup table. This replaces the previous statmando.com-based approach
+// entirely for standings; statmando is still used separately for C1X%
+// (DGPT's own standings response doesn't include putting stats).
 async function getStandings(division) {
-  const html = await fetchHtml(`https://statmando.com/rankings/dgpt/${division.toLowerCase()}`);
+  const pageHtml = await fetchHtml(`https://www.dgpt.com/full-standings/?division=${division}`);
+
+  const tokenMatch = pageHtml.match(/"token"\s*:\s*"([a-f0-9]{32})"/i)
+    || pageHtml.match(/token['"]?\s*[:=]\s*['"]([a-f0-9]{32})['"]/i);
+  const pageIdMatch = pageHtml.match(/"page_id"\s*:\s*"?(\d+)"?/i)
+    || pageHtml.match(/page_id['"]?\s*[:=]\s*['"]?(\d+)['"]?/i);
+
+  if (!tokenMatch || !pageIdMatch) {
+    throw new Error(
+      `Could not find the DGPT AJAX token/page_id in the ${division} standings page — ` +
+      `DGPT's page markup may have changed. Inspect the raw HTML around where the stats ` +
+      `module is initialized (search for "token" or "page_id") and update the regexes in getStandings().`
+    );
+  }
+
+  const token = tokenMatch[1];
+  const pageId = pageIdMatch[1];
+
+  const body = new URLSearchParams({
+    action: 'get_standings',
+    page_id: pageId,
+    token: token,
+    division: division,
+    league: 'dgpt',
+  });
+
+  const res = await fetch('https://www.dgpt.com/wp-admin/admin-ajax.php', {
+    method: 'POST',
+    headers: {
+      'User-Agent': BROWSER_UA,
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Referer': `https://www.dgpt.com/full-standings/?division=${division}`,
+    },
+    body: body.toString(),
+  });
+  if (!res.ok) throw new Error(`DGPT standings AJAX request failed for ${division}: ${res.status}`);
+  const html = await res.text();
+
   const $ = cheerio.load(html);
   const rows = [];
-  $('table tr').each((i, el) => {
-    const cells = $(el).find('td');
-    if (cells.length < 3) return;
-    const rank = $(cells[0]).text().trim();
-    const link = $(cells[2]).find('a').first();
-    const name = link.text().replace(/\*/g, '').trim();
-    const slug = (link.attr('href') || '').split('/player/')[1]?.split('/')[0];
-    if (name && slug && /^\d+$/.test(rank)) {
-      rows.push({ rank: parseInt(rank, 10), name, slug });
+  $('tr[data-pdgaid]').each((i, el) => {
+    const pdga = parseInt($(el).attr('data-pdgaid'), 10);
+    const rank = parseInt($(el).find('.DGPTStandings--table_rank span').first().text().trim(), 10);
+    const name = $(el).find('.DGPTStandings--table_name span').first().text().trim();
+    if (pdga && name && !isNaN(rank)) {
+      rows.push({ rank, name, pdga });
     }
   });
-  // dedupe, keep best (lowest) rank per player, take top N
-  const seen = new Map();
-  for (const r of rows) {
-    if (!seen.has(r.name) || r.rank < seen.get(r.name).rank) seen.set(r.name, r);
+
+  if (rows.length === 0) {
+    throw new Error(`Parsed 0 standings rows for ${division} — the AJAX response markup may have changed, check getStandings()`);
   }
-  return [...seen.values()].sort((a, b) => a.rank - b.rank).slice(0, TOP_N);
+
+  return rows.sort((a, b) => a.rank - b.rank).slice(0, TOP_N);
 }
 
 // 2. C1X putting % by player name
@@ -221,14 +278,9 @@ async function buildDivision(division, existingByPdga) {
   const players = [];
 
   for (const s of standings) {
-    // Name -> PDGA# comes from PDGA_NUMBER_LOOKUP below, seeded for the top 40
-    // in each division as of 09-Jul-2026. Standings shift over the season, so
-    // re-check this mapping periodically and add any new top-40 entrants.
-    const pdgaNumber = PDGA_NUMBER_LOOKUP[s.name];
-    if (!pdgaNumber) {
-      console.error(`No PDGA number on file for ${s.name} — add it to PDGA_NUMBER_LOOKUP`);
-      continue;
-    }
+    // s.pdga is the athlete's real PDGA number, straight from DGPT's own
+    // standings data (data-pdgaid attribute) — no manual lookup needed.
+    const pdgaNumber = s.pdga;
 
     let profile;
     try {
@@ -260,101 +312,11 @@ async function buildDivision(division, existingByPdga) {
   return players;
 }
 
-// Seed with PDGA numbers (name must match statmando's display name exactly).
-// Complete for the top 40 MPO + top 40 FPO Tour standings as of 09-Jul-2026,
-// sourced from PDGA.com player pages and tournament roster pages.
-const PDGA_NUMBER_LOOKUP = {
-  // MPO top 40 (DGPT World Standings rank as of 2026-26)
-  "Gannon Buhr": 75412,
-  "Richard Wysocki": 38008,
-  "Calvin Heimburg": 45971,
-  "Isaac Robinson": 50670,
-  "Adam Hammes": 57365,
-  "Anthony Barela": 44382,
-  "Niklas Anttila": 91249,
-  "Gavin Babcock": 80331,
-  "Sullivan Tipton": 78817,
-  "Luke Taylor": 102119,
-  "Eagle McMahon": 37817,
-  "Casey White": 81739,
-  "Ezra Robinson": 50671,
-  "Aaron Gossage": 35449,
-  "Zachary Nash": 101197,
-  "Joseph Anderson": 122356,
-  "Silas Schultz": 79047,
-  "Raven Newsom": 88212,
-  "Jaden Rye": 153363,
-  "Kyle Klein": 85132,
-  "Andrew Marwede": 75590,
-  "Jake Monn": 98722,
-  "Chris Dickerson": 62467,
-  "Austin Turner": 54049,
-  "Cole Redalen": 79748,
-  "Bradley Williams": 31644,
-  "Paul Ulibarri": 27171,
-  "Paul Krans": 132521,
-  "Corey Ellis": 44512,
-  "Parker Welck": 39491,
-  "Jesse Nieminen": 58923,
-  "Mauri Villmann": 107197,
-  "Evan Smith": 101574,
-  "Jakub Semerád": 91925,
-  "Braeden Sides": 129963,
-  "Clay Edwards": 91397,
-  "Väinö Mäkelä": 59635,
-  "Albert Tamm": 76669,
-  "Evan Scott": 89394,
-  "Robert Burridge": 96512,
-
-  // FPO top 40 (DGPT World Standings rank as of 2026-20)
-  "Ohn Scoggins": 48976,
-  "Holyn Handley": 133547,
-  "Silva Saarinen": 107335,
-  "Missy Gannon": 85942,
-  "Henna Blomroos": 59227,
-  "Catrina Allen": 44184,
-  "Eveliina Salonen": 64927,
-  "Ella Hansen": 144112,
-  "Valerie Mandujano": 62879,
-  "Hanna Huynh": 112647,
-  "Kat Mertsch": 99455,
-  "Lisa Fajkus": 32654,
-  "Jessica Gurthie": 50656,
-  "Sintija Klezberga": 229526,
-  "Taylor Chocek": 189702,
-  "Sofia Donnecke": 185534,
-  "Emily Weatherman": 111487,
-  "Paige Pierce": 29190,
-  "Rebecca Cox": 32917,
-  "Raven Klein": 138272,
-  "Alexis Mandujano": 62880,
-  "Madison Walker": 59431,
-  "Heidi Laine": 66599,
-  "Kona Star Montgomery": 27832,
-  "Rebecca Don": 208576,
-  "Eliezra Midtlyng": 198446,
-  "Macie Velediaz": 104187,
-  "Anneli Tõugjas-Männiste": 85484,
-  "Anniken Kristiansen Steen": 109996,
-  "Dani K. Hart": 146137,
-  "Iida Lehtomäki": 216558,
-  "Jennifer Smiley": 184736,
-  "Kelley Foster": 152191,
-  "Maria Oliva": 63257,
-  "Jennifer Allen": 15354,
-  "MJ Gager": 146304,
-  "Erika Stinchcomb": 71262,
-  "Holly Finley": 51277,
-  "Ida Emilie Nesse": 181772,
-  "Chandler Reigh": 277832,
-
-  // New entrants that rotated into the FPO top 40 after this table was
-  // originally built (standings shift week to week — add more here as needed)
-  "Julia Fors": 224238,
-  "Amanda Lennartsson": 155026,
-  "Kristýna Jurčíková": 210972,
-  "Matilda Ringbom": 77385,
-};
+// NOTE: the manual PDGA_NUMBER_LOOKUP table that used to live here has been
+// removed. getStandings() now pulls PDGA numbers directly from DGPT's own
+// data (data-pdgaid attributes), which is both more accurate and immune to
+// the "new player rotated into the top 40" problem entirely — no more
+// manual upkeep needed as standings shift over the season.
 
 async function refreshPartial(existingPlayers) {
   const updated = [];
