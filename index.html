@@ -114,6 +114,15 @@
     cursor:pointer;
   }
   .brand h1 span{ color:var(--orange); }
+  .update-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--cream-dim);
+    opacity:0.75;
+    margin:2px 0 0;
+  }
 
   .card{
     background:var(--cream);
@@ -618,6 +627,7 @@
 <div class="app">
   <div class="brand">
     <h1 id="brandTitle">Fairway <span>Five</span></h1>
+    <p class="update-label" id="updateLabel"></p>
   </div>
 
   <div class="card" id="pickScreen">
@@ -886,6 +896,7 @@ function standingNumber(p){
 // Kept fresh by .github/workflows/refresh-data.yml. Replace the placeholder
 // below with your actual repo path once it's pushed to GitHub.
 const PLAYERS_JSON_URL = "https://raw.githubusercontent.com/smallcityguitar/Fairway-Five/main/players.json";
+const META_JSON_URL = "https://raw.githubusercontent.com/smallcityguitar/Fairway-Five/main/meta.json";
 
 let PLAYERS = FALLBACK_PLAYERS;
 
@@ -905,6 +916,28 @@ async function loadPlayers(){
     PLAYERS = FALLBACK_PLAYERS;
   }
   setPickScreenReady();
+  loadUpdateLabel();
+}
+
+// Best-effort, non-blocking — if meta.json isn't there yet (e.g. the
+// scraper hasn't run since this feature was added) or the fetch fails for
+// any reason, the label just stays blank rather than showing anything wrong.
+async function loadUpdateLabel(){
+  try{
+    const res = await fetch(META_JSON_URL, {cache:"no-store"});
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    const meta = await res.json();
+    if(!meta.generatedAt) throw new Error("meta.json missing generatedAt");
+
+    if(meta.currentMajorEliteEvent){
+      document.getElementById("updateLabel").textContent = meta.currentMajorEliteEvent;
+    } else {
+      const monthName = new Date(meta.generatedAt).toLocaleDateString("en-US", { month:"long" });
+      document.getElementById("updateLabel").textContent = monthName + " PDGA Update";
+    }
+  } catch(err){
+    console.warn("Update label fetch failed:", err.message);
+  }
 }
 
 function setPickScreenReady(){

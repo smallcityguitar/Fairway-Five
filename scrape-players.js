@@ -69,6 +69,7 @@
  */
 
 const fs = require('fs');
+const path = require('path');
 const cheerio = require('cheerio'); // npm install cheerio --save
 
 const TOP_N = 40; // per division, matching the agreed scope
@@ -451,6 +452,7 @@ async function main() {
     const refreshed = await refreshPartial(existing);
     const json = JSON.stringify(refreshed, null, 2);
     if (outPath) fs.writeFileSync(outPath, json); else console.log(json);
+    writeMetaFile(outPath);
     return;
   }
 
@@ -471,6 +473,66 @@ async function main() {
   const fpo = await buildDivision('FPO', existingByPdga);
   const json = JSON.stringify([...mpo, ...fpo], null, 2);
   if (outPath) fs.writeFileSync(outPath, json); else console.log(json);
+  writeMetaFile(outPath);
+}
+
+// Hardcoded from the official 2026 PDGA Major/Elite/A-Tier schedule:
+// https://www.pdga.com/pdga-documents/tour-documents/2026-pdga-major-elite-atier-event-schedule
+// Filtered to Tier=Elite or Tier=M AND Class/Divs="MPO/FPO Only" — this
+// excludes age-restricted/amateur/collegiate events that share the same
+// tier labels (e.g. US Masters, US Amateur, Junior Worlds, College Nationals)
+// but aren't open MPO/FPO pro tour stops. This is static season data, so it
+// only needs updating once a year when the next season's schedule is out —
+// it does NOT need to be re-scraped live, unlike everything else here.
+const MAJOR_ELITE_SCHEDULE_2026 = [
+  ['DGPT Supreme Flight Open', '2026-02-27', '2026-03-01'],
+  ['DGPT Big Easy Open', '2026-03-13', '2026-03-15'],
+  ['DGPT Queen City Classic', '2026-03-27', '2026-03-29'],
+  ['PDGA Champions Cup', '2026-04-09', '2026-04-12'],
+  ['DGPT Jonesboro Open', '2026-04-17', '2026-04-19'],
+  ['DGPT Kansas City Wide Open', '2026-04-24', '2026-04-26'],
+  ['DGPT+ The Open at Austin', '2026-05-07', '2026-05-10'],
+  ['DGPT+ OTB Open', '2026-05-21', '2026-05-24'],
+  ['DGPT+ Northwest Championship', '2026-06-04', '2026-06-07'],
+  ['European Open', '2026-06-18', '2026-06-21'],
+  ['DGPT Swedish Open', '2026-06-26', '2026-06-28'],
+  ['DGPT Ale Open', '2026-07-03', '2026-07-05'],
+  ['DGPT Heinola Open', '2026-07-10', '2026-07-12'],
+  ['DGPT+ Ledgestone Open', '2026-07-30', '2026-08-02'],
+  ['DGPT Discmania Challenge', '2026-08-07', '2026-08-09'],
+  ['DGPT Preserve Championship', '2026-08-14', '2026-08-16'],
+  ['PDGA Professional Disc Golf World Championships', '2026-08-26', '2026-08-30'],
+  ['DGPT Open at Idlewild', '2026-09-04', '2026-09-06'],
+  ['DGPT Playoffs - Green Mountain Championship', '2026-09-17', '2026-09-20'],
+  ['DGPT Playoffs - MVP Open x OTB', '2026-09-24', '2026-09-27'],
+  ['DGPT Championship', '2026-10-15', '2026-10-18'],
+];
+
+// "Current" = the most recently STARTED event (start date <= today) — so an
+// event that's still ongoing counts as current, not the one before it.
+// Returns null if the season hasn't started yet (e.g. run in January).
+function getCurrentMajorEliteEvent() {
+  const today = new Date().toISOString().slice(0, 10);
+  const started = MAJOR_ELITE_SCHEDULE_2026.filter(([, start]) => start <= today);
+  if (started.length === 0) return null;
+  started.sort((a, b) => (a[1] < b[1] ? 1 : -1)); // latest start date first
+  return started[0][0];
+}
+
+// Writes a small meta.json alongside players.json, recording when this
+// scraper run last actually completed, plus the current/most-recent
+// Major or Elite Series event name. Kept as a SEPARATE file rather than
+// adding fields to players.json itself, since the game currently expects
+// players.json to be a plain array (PLAYERS = await response.json()) — this
+// avoids touching that format at all, so nothing existing can break.
+function writeMetaFile(outPath) {
+  if (!outPath) return;
+  const metaPath = path.join(path.dirname(outPath) || '.', 'meta.json');
+  const meta = {
+    generatedAt: new Date().toISOString(),
+    currentMajorEliteEvent: getCurrentMajorEliteEvent(),
+  };
+  fs.writeFileSync(metaPath, JSON.stringify(meta, null, 2));
 }
 
 main().catch(err => {
