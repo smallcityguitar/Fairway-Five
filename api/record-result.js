@@ -46,15 +46,38 @@ export default async function handler(req, res) {
   }
 
   try {
-    const url = `${restUrl}/hincrby/${encodeURIComponent(key)}/${encodeURIComponent(bucket)}/1`;
-    const r = await fetch(url, {
+    const incrUrl = `${restUrl}/hincrby/${encodeURIComponent(key)}/${encodeURIComponent(bucket)}/1`;
+    const incrRes = await fetch(incrUrl, {
       headers: { Authorization: `Bearer ${restToken}` },
     });
-    if (!r.ok) {
-      const text = await r.text();
+    if (!incrRes.ok) {
+      const text = await incrRes.text();
       return res.status(502).json({ error: `Upstash error: ${text}` });
     }
-    return res.status(200).json({ ok: true });
+
+    // Return the full updated hash in this same response, rather than making
+    // the browser fire a separate GET afterward — that separate GET is what
+    // used to race against this increment, meaning the very first person to
+    // complete a given date/division/difficulty each day would see the
+    // histogram fetch land before their own increment did, showing 0 total
+    // and hiding itself. Doing both here guarantees the counts returned
+    // always include this player's own just-recorded result.
+    const hgetUrl = `${restUrl}/hgetall/${encodeURIComponent(key)}`;
+    const hgetRes = await fetch(hgetUrl, {
+      headers: { Authorization: `Bearer ${restToken}` },
+    });
+    let counts = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, 'X': 0 };
+    if (hgetRes.ok) {
+      const data = await hgetRes.json();
+      const flat = data.result || [];
+      for (let i = 0; i < flat.length; i += 2) {
+        const field = flat[i];
+        const value = parseInt(flat[i + 1], 10);
+        if (field in counts && !isNaN(value)) counts[field] = value;
+      }
+    }
+
+    return res.status(200).json({ ok: true, counts });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
