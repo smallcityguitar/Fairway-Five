@@ -1233,28 +1233,95 @@ function seedVersionFor(div){
   return SEED_VERSION_OVERRIDES[div] ?? SEED_VERSION;
 }
 
-function computeDailyAnswer(div, difficulty){
+// Parses ANY reasonable "Y-M-D" date string (zero-padded or not) into a
+// comparable integer day count, so date comparisons never depend on the
+// two sides happening to share the same padding format.
+function dateStrToDayNum(dateStr){
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return Math.floor(Date.UTC(y, m - 1, d, 12) / 86400000);
+}
+
+// Returns the (non-zero-padded) "Y-M-D" date string N days before dateStr —
+// matching the exact format todayStr()/dateOverride use everywhere else
+// (seed strings, storage keys), as opposed to the zero-padded format the
+// <input type="date"> pickers need.
+function dateStrNDaysBefore(dateStr, n){
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d, 12) - n * 86400000);
+  return `${dt.getUTCFullYear()}-${dt.getUTCMonth() + 1}-${dt.getUTCDate()}`;
+}
+
+// A player can't be picked again for the same division+difficulty until
+// this many days have passed — so the wider pool gets used more evenly
+// instead of clustering around whoever the seed happens to favor.
+const NO_REPEAT_DAYS = 15;
+
+// Caches computeDailyAnswer results per (div, difficulty, dateStr) for the
+// life of the page. This is what makes the recursive lookback below
+// tractable: computing today's answer needs yesterday's, which needs the
+// day before's, etc., all the way back to EARLIEST_PUZZLE_DATE — without
+// caching, that chain would get recomputed from scratch on every single
+// recursive call (exponential blowup). With it, each historical day is only
+// ever actually computed once per page load, however many later days
+// reference it, so the whole chain costs roughly one pass over the site's
+// history rather than one pass per day in that history.
+const dailyAnswerCache = {};
+
+function computeDailyAnswer(div, difficulty, dateStr){
+  const cacheKey = div + "|" + difficulty + "|" + dateStr;
+  if(dailyAnswerCache[cacheKey] !== undefined) return dailyAnswerCache[cacheKey];
+
   const answerPool = PLAYERS.filter(p=>
     (div === "MIX" || p.div === div) &&
     isEligibleAnswer(p) &&
     (difficulty !== "easy" || standingNumber(p) <= EASY_MODE_LIMIT)
   );
-  const seed = dateSeed(todayStr() + "-" + div + "-" + difficulty + "-v" + seedVersionFor(div));
+  const seed = dateSeed(dateStr + "-" + div + "-" + difficulty + "-v" + seedVersionFor(div));
   const rand = seededRandom(seed);
   rand(); // burn the first draw — improves distribution across small pools
 
+  // Exclude whoever was ACTUALLY the answer for this division+difficulty on
+  // any of the last NO_REPEAT_DAYS days — a true recursive lookback (via the
+  // cache above), not an approximation based on what the seed would've
+  // picked before any of ITS OWN exclusions applied. That distinction
+  // matters a lot in practice: whenever a pool is small enough that many
+  // days already need their own fallback substitution (very plausible for
+  // Easy mode's ~20-player pool against a 15-day window), comparing against
+  // pre-exclusion picks misses those substitutions constantly, not rarely,
+  // and lets real repeats slip through undetected.
+  //
+  // The window itself degrades gracefully rather than jumping straight from
+  // "excluded" to "wide open": if the pool can't support a full 15-day gap,
+  // this tries 14, then 13, and so on, using the largest window that still
+  // leaves at least one candidate — so a repeat only ever happens as a last
+  // resort, with the most spacing the pool can actually support.
   let candidates = answerPool;
+  for(let windowSize = NO_REPEAT_DAYS; windowSize >= 0; windowSize--){
+    const excludedRecent = new Set();
+    for(let i=1; i<=windowSize; i++){
+      const pastDateStr = dateStrNDaysBefore(dateStr, i);
+      if(dateStrToDayNum(pastDateStr) < dateStrToDayNum(EARLIEST_PUZZLE_DATE)) break;
+      const pastAnswer = computeDailyAnswer(div, difficulty, pastDateStr);
+      if(pastAnswer) excludedRecent.add(pastAnswer.name);
+    }
+    const filtered = answerPool.filter(p => !excludedRecent.has(p.name));
+    if(filtered.length > 0){ candidates = filtered; break; }
+  }
+
   if(div === "MIX"){
-    // Make sure MIX never coincides with whichever player MPO or FPO landed
-    // on today — check against the actual LOCKED answers (not a fresh
-    // recompute), so this stays consistent with what's really pinned for today.
-    const mpoAnswer = getLockedDailyAnswer("MPO", difficulty);
-    const fpoAnswer = getLockedDailyAnswer("FPO", difficulty);
+    // Make sure MIX never coincides with whichever player MPO or FPO
+    // actually land on for this same date (their own no-repeat rule
+    // already applied, since this calls the full function recursively).
+    const mpoAnswer = computeDailyAnswer("MPO", difficulty, dateStr);
+    const fpoAnswer = computeDailyAnswer("FPO", difficulty, dateStr);
     const excluded = new Set([mpoAnswer && mpoAnswer.name, fpoAnswer && fpoAnswer.name]);
-    const filtered = answerPool.filter(p=>!excluded.has(p.name));
+    const filtered = candidates.filter(p=>!excluded.has(p.name));
     if(filtered.length > 0) candidates = filtered;
   }
-  return candidates[Math.floor(rand()*candidates.length)];
+
+  const result = candidates[Math.floor(rand()*candidates.length)];
+  dailyAnswerCache[cacheKey] = result;
+  return result;
 }
 
 function lockedAnswerKey(div, difficulty){
@@ -1277,7 +1344,7 @@ function getLockedDailyAnswer(div, difficulty){
     // and lock in a fresh one instead.
   }
 
-  const fresh = computeDailyAnswer(div, difficulty);
+  const fresh = computeDailyAnswer(div, difficulty, todayStr());
   if(fresh){
     try{ localStorage.setItem(lockedAnswerKey(div, difficulty), fresh.name); } catch(e){ /* ignore */ }
   }
