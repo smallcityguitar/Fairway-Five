@@ -156,6 +156,19 @@ async function getStandings(division) {
       rows.push({ rank: parseInt(rank, 10), name, slug });
     }
   });
+
+  // Fail loudly rather than silently returning an empty array. A page that
+  // fetched fine (200 OK) but yielded zero parseable rows almost certainly
+  // means StatMando's markup shifted, or a transient block/rate-limit
+  // returned some other page shape entirely — either way, silently
+  // returning [] here previously meant buildDivision() would iterate zero
+  // players, log nothing, and let main() go on to overwrite players.json
+  // with an entire division wiped out. Throwing here means the run fails
+  // and the LAST GOOD players.json is left untouched instead.
+  if (rows.length === 0) {
+    throw new Error(`Parsed 0 standings rows for ${division} from StatMando — its markup may have changed, or the request may have been rate-limited/blocked. Check getStandings().`);
+  }
+
   // dedupe, keep best (lowest) rank per player, take top N
   const seen = new Map();
   for (const r of rows) {
@@ -367,6 +380,10 @@ const PDGA_NUMBER_LOOKUP = {
   "Albert Tamm": 76669,
   "Evan Scott": 89394,
   "Robert Burridge": 96512,
+
+  // New entrants that rotated into the MPO top 40 over the course of the season
+  "Harry Chace": 131546,
+  "Lauri Lehtinen": 82297,
 
   // FPO top 40
   "Ohn Scoggins": 48976,
